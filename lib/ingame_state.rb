@@ -29,12 +29,14 @@ class IngameState < EngineState
       end
     end
     .system(:draw, :sprite_draw, [:position, :sprite]) do |e|
-      x = e[:position][:x]
-      y = e[:position][:y]
-      img = e[:sprite][:image]
-      dx = e[:sprite][:anchor][:x]*img.width
-      dy = e[:sprite][:anchor][:y]*img.height
-      img.draw x-dx, y-dy, 0
+      @window::translate(*screen2world(0,0)) do
+        x = e[:position][:x]
+        y = e[:position][:y]
+        img = e[:sprite][:image]
+        dx = e[:sprite][:anchor][:x]*img.width
+        dy = e[:sprite][:anchor][:y]*img.height
+        img.draw x-dx, y-dy, 0
+      end
     end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
       e[:velocity][:x] += e[:acceleration][:x]*dt
@@ -54,5 +56,13 @@ class IngameState < EngineState
       :acceleration => {:x => 0, :y => 0},
       :force => {:x => 0, :y => 0}
     })
+  end
+
+  def screen2world x, y
+    [x+@window.width/2, y+@window.height/2]
+  end
+
+  def world2screen x, y
+    [@window.width/2-x, @window.height/2-y]
   end
 end

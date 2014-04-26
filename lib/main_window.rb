@@ -13,16 +13,19 @@ class MainWindow < Gosu::Window
     @current_state.leave_state unless @change_state.nil?
     @current_state = @states[new_state]
     @current_state.enter_state
+    self
   end
 
   def add_state name, state
     @states[name] = state
 
     change_state(name) if @change_state.nil?
+    self
   end
 
   def remove_state name, state
     @states.delete name, state
+    self
   end
 
   def button_down id

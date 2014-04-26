@@ -1,4 +1,5 @@
-require_relative 'window_state.rb'
+require_relative 'window_state'
+require_relative 'ingame_state'
 
 class StartState < WindowState
 
@@ -12,7 +13,7 @@ class StartState < WindowState
     @previous_menu = []
     @menu = [
       ["Start Game", -> {
-        puts "Start Game!"
+        start_game
         # @window.change_state(:ingame)
       }],
       ["Options", -> {
@@ -51,6 +52,11 @@ class StartState < WindowState
     @selected = 0
     @menu = @previous_menu.pop
     @menu_images = generate_menu_images @menu
+  end
+
+  def start_game
+    @window.add_state(:worlds,IngameState.new(@window))
+           .change_state(:worlds)
   end
 
   def generate_menu_images menu

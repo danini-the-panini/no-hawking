@@ -55,8 +55,8 @@ class StartState < WindowState
   end
 
   def start_game
-    @window.add_state(:worlds,MultiverseState.new(@window))
-           .change_state(:worlds)
+    @window.add_state(:multiverse,MultiverseState.new(@window))
+           .change_state(:multiverse)
   end
 
   def generate_menu_images menu

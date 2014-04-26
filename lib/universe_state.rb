@@ -1,13 +1,12 @@
 require_relative 'ingame_state'
 
 class UniverseState < IngameState
-  def initialize window
-    super
+  def initialize window, universe
+    super window
 
-    @engine
-    .add_entity(gen_player.merge({ ## TODO: Change to probe-player
-      :player => {:a => 30},
-      :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png")
-    }))
+    universe.each do |e|
+      @engine.add_entity e
+    end
+    
   end
 end

@@ -54,6 +54,12 @@ class IngameState < EngineState
       e[:rotation][:theta] = (rad*180.0)/Math::PI
       e
     end
+    .system(:update, :cursor, [:position, :cursor]) do |dt, t, e|
+      mx, my = screen2world(@window.mouse_x, @window.mouse_y)
+      e[:position][:x] = mx
+      e[:position][:y] = my
+      e
+    end
     .add_entity({
       :player => {:a => 30},
       :follow_mouse => {},
@@ -64,10 +70,16 @@ class IngameState < EngineState
       :acceleration => {:x => 0, :y => 0},
       :force => {:x => 0, :y => 0}
     })
+    .add_entity({
+      :cursor => true,
+      :sprite => ECS::make_sprite(Gosu::Image.new @window, "cursor.png"),
+      :position => {:x => 0, :y => 0},
+      :rotation => {:theta => 0}
+    })
   end
 
   def screen2world x, y
-    [@window.width/2-x, @window.height/2-y]
+    [x-@window.width/2, y-@window.height/2]
   end
 
   def world2screen x, y

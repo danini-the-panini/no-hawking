@@ -79,12 +79,28 @@ class IngameState < EngineState
     })
   end
 
+  def remove e
+    e.merge({:delete => true})
+  end
+
   def screen2world x, y
     [x-@window.width/2, y-@window.height/2]
   end
 
   def world2screen x, y
     [x+@window.width/2, y+@window.height/2]
+  end
+
+  def sq(x)
+    x*x
+  end
+
+  def dist_sq x1, y1, x2, y2
+    len_sq x1-x2,y1-y2
+  end
+
+  def len_sq x, y
+    sq(x) + sq(y)
   end
 
   def gen_player

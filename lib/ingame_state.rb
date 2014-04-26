@@ -78,7 +78,7 @@ class IngameState < EngineState
       :norotate => true
     })
   end
-  
+
 
   def screen2world x, y
     [x-@window.width/2, y-@window.height/2]
@@ -86,6 +86,19 @@ class IngameState < EngineState
 
   def world2screen x, y
     [x+@window.width/2, y+@window.height/2]
+  end
+
+  def gen_player
+    {
+      :player => {},
+      :follow_mouse => {},
+      :sprite => {},
+      :position => {:x => 0, :y => 0},
+      :rotation => {:theta => 0},
+      :velocity => {:x => 0, :y => 0},
+      :acceleration => {:x => 0, :y => 0},
+      :force => {:x => 0, :y => 0}
+    }
   end
 
 end

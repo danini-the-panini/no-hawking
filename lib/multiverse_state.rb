@@ -21,16 +21,10 @@ class MultiverseState < IngameState
       end
       e
     end
-    .add_entity({
+    .add_entity(gen_player.merge({
       :player => {:a => 30},
-      :follow_mouse => {},
-      :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
-      :position => {:x => 0, :y => 0},
-      :rotation => {:theta => 0},
-      :velocity => {:x => 0, :y => 0},
-      :acceleration => {:x => 0, :y => 0},
-      :force => {:x => 0, :y => 0}
-    })
+      :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png")
+    }))
     .add_entity(gen_white_hole(-100,-100))
     .add_entity(gen_white_hole(200,-100))
     .add_entity(gen_white_hole(50,200))

@@ -1,5 +1,5 @@
 require_relative 'window_state'
-require_relative 'ingame_state'
+require_relative 'multiverse_state'
 
 class StartState < WindowState
 
@@ -55,7 +55,7 @@ class StartState < WindowState
   end
 
   def start_game
-    @window.add_state(:worlds,IngameState.new(@window))
+    @window.add_state(:worlds,MultiverseState.new(@window))
            .change_state(:worlds)
   end
 

@@ -79,7 +79,6 @@ class IngameState < EngineState
     })
   end
 
-
   def screen2world x, y
     [x-@window.width/2, y-@window.height/2]
   end

@@ -55,6 +55,7 @@ class MultiverseState < IngameState
   end
 
   def gen_universe
+    ## TODO: generate more interesting universes
     [
       gen_player.merge({ ## TODO: Change to probe-player
         :player => {:a => 30},

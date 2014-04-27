@@ -6,6 +6,7 @@ class MultiverseState < IngameState
     super
 
     @white_hole_img = Gosu::Image.new @window, "white_hole.png"
+    @cam_follow_factor = 1.0
 
     @chunk_size = 1000
     @visited = {}
@@ -40,6 +41,11 @@ class MultiverseState < IngameState
         @engine.add_entity(@visited[[xi,yi]] = gen_white_hole((xi+Gosu::random(0,1))*@chunk_size,
           (yi+Gosu::random(0,1))*@chunk_size))
       end
+      e
+    end
+    .system(:update, :cam_follow, [:player, :position, :velocity]) do |dt, t, e|
+      @camera[:x] = e[:position][:x] + @cam_follow_factor*e[:velocity][:x]
+      @camera[:y] = e[:position][:y] + @cam_follow_factor*e[:velocity][:y]
       e
     end
     .add_entity(gen_player.merge({

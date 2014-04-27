@@ -42,6 +42,12 @@ class MultiverseState < IngameState
       end
       e
     end
+    .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
+      @engine.each_entity([:player, :hawking]) do |pl|
+        e[:scale][:x] = pl[:hawking]/@hawking_requirement
+      end
+      e
+    end
     .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
       if e[:hawking] > @hawking_requirement
         puts "Winning!"
@@ -54,10 +60,22 @@ class MultiverseState < IngameState
       draw_entity e
     end
     .add_entity(gen_player.merge({
-      :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
+      :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
       :hawking => 0.0,
       :probes => @starting_probes
     }))
+    .add_entity({
+      :hud => true,
+      :hawking_bar => true,
+      :position => {:x => 10, :y => @window.height-10},
+      :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar.png"),{:x => 0.0, :y => 1.0}),
+      :scale => {:x => 0.0, :y => 1.0}
+    })
+    .add_entity({
+      :hud => true,
+      :position => {:x => 10, :y => @window.height-10},
+      :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
+    })
   end
 
   def gen_white_hole x, y
@@ -67,7 +85,7 @@ class MultiverseState < IngameState
         :base_size => Gosu::random(0.6,1.4), :base_velocity => 20},
       :position => {:x => x, :y => y},
       :scale => {:x => 1, :y => 1},
-      :sprite => ECS::make_sprite(@white_hole_img),
+      :sprite => make_sprite(@white_hole_img),
       :emitter => gen_emitter,
       :colour => Gosu::Color.rgba(Gosu::random(127,255).to_i, Gosu::random(127,255).to_i,
         Gosu::random(127,255).to_i, 255),
@@ -79,7 +97,7 @@ class MultiverseState < IngameState
     ## TODO: generate more interesting universes
     [{
       :position => {:x => Gosu::random(-200,200), :y => Gosu::random(-200,200)},
-      :sprite => ECS::make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
+      :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
       :rotation => {:theta => Gosu::random(0,360)}
     }]
   end
@@ -89,5 +107,5 @@ class MultiverseState < IngameState
     @window.add_state(:universe_state, universe_state)
            .change_state(:universe_state)
   end
-  
+
 end

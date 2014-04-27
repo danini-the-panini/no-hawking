@@ -78,9 +78,8 @@ class IngameState < EngineState
       e
     end
     .system(:update, :cursor, [:position, :cursor]) do |dt, t, e|
-      mx, my = screen2world(@window.mouse_x, @window.mouse_y)
-      e[:position][:x] = mx
-      e[:position][:y] = my
+      e[:position][:x] = @window.mouse_x
+      e[:position][:y] = @window.mouse_y
       e
     end
     .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
@@ -89,37 +88,44 @@ class IngameState < EngineState
     .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
       draw_entity e
     end
+    .system(:draw, :sprite_draw, [:position, :sprite, :hud]) do |e|
+      draw_entity_nocam e
+    end
     .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
       draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF,
         :draw_mode => :additive})
     end
     .add_entity({
       :cursor => true,
-      :sprite => ECS::make_sprite(Gosu::Image.new @window, "cursor.png"),
+      :sprite => make_sprite(Gosu::Image.new @window, "cursor.png"),
       :position => {:x => 0, :y => 0},
-      :norotate => true
+      :hud => true
     })
   end
 
   def draw_entity e
     @window::translate(*world2screen(0,0)) do
-      x = e[:position][:x]
-      y = e[:position][:y]
-      img = e[:sprite][:image]
-      dx = e[:sprite][:anchor][:x]
-      dy = e[:sprite][:anchor][:y]
-      if e[:scale]
-        sx = e[:scale][:x]
-        sy = e[:scale][:y]
-      else
-        sx = 1
-        sy = 1
-      end
-      theta = e[:rotation] ? e[:rotation][:theta] : 0
-      colour = e[:colour] || 0xFFFFFFFF
-      mode = e[:draw_mode] || :default
-      img.draw_rot x, y, 0, theta, dx, dy, sx, sy, colour, mode
+      draw_entity_nocam e
     end
+  end
+
+  def draw_entity_nocam e
+    x = e[:position][:x]
+    y = e[:position][:y]
+    img = e[:sprite][:image]
+    dx = e[:sprite][:anchor][:x]
+    dy = e[:sprite][:anchor][:y]
+    if e[:scale]
+      sx = e[:scale][:x]
+      sy = e[:scale][:y]
+    else
+      sx = 1
+      sy = 1
+    end
+    theta = e[:rotation] ? e[:rotation][:theta] : 0
+    colour = e[:colour] || 0xFFFFFFFF
+    mode = e[:draw_mode] || :default
+    img.draw_rot x, y, 0, theta, dx, dy, sx, sy, colour, mode
   end
 
   def remove e
@@ -189,7 +195,11 @@ class IngameState < EngineState
 
   def gen_emitter
     {:period => 0.5, :velocity => 20, :lifetime => 3, :last_emit => 0, :variation => 0,
-      :sprite => ECS::make_sprite(@particle)}
+      :sprite => make_sprite(@particle)}
+  end
+
+  def make_sprite image, anchor={:x => 0.5, :y => 0.5}
+    {:image => image, :anchor => anchor}
   end
 
   def enter_state

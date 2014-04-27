@@ -24,7 +24,7 @@ class UniverseState < IngameState
     @engine
     .add_entity(
       gen_player.merge({
-        :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
+        :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
         :probe => {:hawking => 0, :hawking_cap => @initial_hawking_cap, :xp => 0,
           :health => 1.0, :health_cap => 1.0, :armour_mult => 1.0,
           :speed_mult => 1.0}

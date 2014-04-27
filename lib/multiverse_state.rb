@@ -18,9 +18,11 @@ class MultiverseState < IngameState
         img.draw x-dx, y-dy, 0, e[:white_hole][:size], e[:white_hole][:size]
       end
     end
-    .system(:update, :pulse_hole, [:white_hole, :pulsate]) do |dt, t, e|
+    .system(:update, :pulse_hole, [:white_hole, :emitter, :pulsate]) do |dt, t, e|
       if t % e[:pulsate][:period] < @window.update_interval
-        e[:white_hole][:size] = e[:pulsate][:base_size]*Gosu::random(e[:pulsate][:min],e[:pulsate][:max])
+        pulse_factor = Gosu::random(e[:pulsate][:min],e[:pulsate][:max])
+        e[:white_hole][:size] = e[:pulsate][:base_size]*pulse_factor
+        e[:emitter][:velocity] = e[:pulsate][:base_velocity]*e[:white_hole][:size]
       end
       e
     end
@@ -47,7 +49,7 @@ class MultiverseState < IngameState
     {
       :white_hole => {:size => 0, :activate_radius => @white_hole_img.width/2},
       :pulsate => {:min => Gosu::random(0.7,0.9), :max => Gosu::random(1.1,1.3), :period => 0.2,
-        :base_size => Gosu::random(0.6,1.4)},
+        :base_size => Gosu::random(0.6,1.4), :base_velocity => 20},
       :position => {:x => x, :y => y},
       :sprite => ECS::make_sprite(@white_hole_img),
       :emitter => gen_emitter,

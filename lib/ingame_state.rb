@@ -10,29 +10,40 @@ class IngameState < EngineState
     @particle = Gosu::Image.new @window, "particle.png"
 
     @engine
-    .input_system(:down, :pcontrol, [:player,:acceleration]) do |id, e|
+    .input_system(:down, :pcontrol, [:player,:driving_force]) do |id, e|
       case id
       when Gosu::KbA
-        e[:acceleration][:x] -= e[:player][:a]
+        e[:driving_force][:x] -= e[:player][:a]
       when Gosu::KbD
-        e[:acceleration][:x] += e[:player][:a]
+        e[:driving_force][:x] += e[:player][:a]
       when Gosu::KbW
-        e[:acceleration][:y] -= e[:player][:a]
+        e[:driving_force][:y] -= e[:player][:a]
       when Gosu::KbS
-        e[:acceleration][:y] += e[:player][:a]
+        e[:driving_force][:y] += e[:player][:a]
       end
     end
-    .input_system(:up, :pcontrol, [:player,:velocity]) do |id, e|
+    .input_system(:up, :pcontrol, [:player,:driving_force]) do |id, e|
       case id
       when Gosu::KbA
-        e[:acceleration][:x] += e[:player][:a]
+        e[:driving_force][:x] += e[:player][:a]
       when Gosu::KbD
-        e[:acceleration][:x] -= e[:player][:a]
+        e[:driving_force][:x] -= e[:player][:a]
       when Gosu::KbW
-        e[:acceleration][:y] += e[:player][:a]
+        e[:driving_force][:y] += e[:player][:a]
       when Gosu::KbS
-        e[:acceleration][:y] -= e[:player][:a]
+        e[:driving_force][:y] -= e[:player][:a]
       end
+    end
+    .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
+      e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
+      e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
+      e
+    end
+    .system(:update, :force, [:acceleration, :force, :mass]) do |dt, t, e|
+      force = total_force(e)
+      e[:acceleration][:x] = force[:x]/e[:mass]
+      e[:acceleration][:y] = force[:y]/e[:mass]
+      e
     end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
       e[:velocity][:x] += e[:acceleration][:x]*dt
@@ -143,9 +154,30 @@ class IngameState < EngineState
     sq(x) + sq(y)
   end
 
+  def dist x1, y1, x2, y2
+    Math::sqrt(dist_sq(x1, y1, x2, y2))
+  end
+
+  def len x, y
+    Math::sqrt(len_sq(x,y))
+  end
+
+  def total_force e
+    force = e[:force].dup
+    if e[:driving_force]
+      force[:x] += e[:driving_force][:x]
+      force[:y] += e[:driving_force][:y]
+    end
+    if e[:friction]
+      force[:x] += e[:friction][:x]
+      force[:y] += e[:friction][:y]
+    end
+    force
+  end
+
   def gen_player
     {
-      :player => {},
+      :player => {:a => 200},
       :follow_mouse => {},
       :sprite => {},
       :position => {:x => 0, :y => 0},
@@ -153,6 +185,9 @@ class IngameState < EngineState
       :velocity => {:x => 0, :y => 0},
       :acceleration => {:x => 0, :y => 0},
       :force => {:x => 0, :y => 0},
+      :driving_force => {:x => 0, :y => 0},
+      :mass => 1,
+      :friction => {:x => 0, :y => 0, :c => 0.8},
       :cam_follow => {:factor => @cam_follow_factor},
     }
   end

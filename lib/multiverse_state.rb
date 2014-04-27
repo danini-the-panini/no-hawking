@@ -54,7 +54,6 @@ class MultiverseState < IngameState
       draw_entity e
     end
     .add_entity(gen_player.merge({
-      :player => {:a => 30},
       :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
       :hawking => 0.0,
       :probes => @starting_probes

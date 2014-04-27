@@ -10,29 +10,21 @@ class IngameState < EngineState
     @particle = Gosu::Image.new @window, "particle.png"
 
     @engine
-    .input_system(:down, :pcontrol, [:player,:driving_force]) do |id, e|
-      case id
-      when Gosu::KbA
+    .system(:update, :control, [:player, :driving_force]) do |dt, t, e|
+      e[:driving_force] = zero
+      if @engine.down? Gosu::KbA
         e[:driving_force][:x] -= e[:player][:a]
-      when Gosu::KbD
-        e[:driving_force][:x] += e[:player][:a]
-      when Gosu::KbW
-        e[:driving_force][:y] -= e[:player][:a]
-      when Gosu::KbS
-        e[:driving_force][:y] += e[:player][:a]
       end
-    end
-    .input_system(:up, :pcontrol, [:player,:driving_force]) do |id, e|
-      case id
-      when Gosu::KbA
+      if @engine.down? Gosu::KbD
         e[:driving_force][:x] += e[:player][:a]
-      when Gosu::KbD
-        e[:driving_force][:x] -= e[:player][:a]
-      when Gosu::KbW
-        e[:driving_force][:y] += e[:player][:a]
-      when Gosu::KbS
+      end
+      if @engine.down? Gosu::KbW
         e[:driving_force][:y] -= e[:player][:a]
       end
+      if @engine.down? Gosu::KbS
+        e[:driving_force][:y] += e[:player][:a]
+      end
+      e
     end
     .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
       e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
@@ -198,6 +190,17 @@ class IngameState < EngineState
   def gen_emitter
     {:period => 0.5, :velocity => 20, :lifetime => 3, :last_emit => 0, :variation => 0,
       :sprite => ECS::make_sprite(@particle)}
+  end
+
+  def enter_state
+    @engine.each_entity [:driving_force] do |e|
+      e[:driving_force] = zero
+    end
+    @engine.unpause
+  end
+
+  def leave_state
+    @engine.pause
   end
 
 end

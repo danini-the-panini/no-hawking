@@ -39,8 +39,10 @@ class UniverseState < IngameState
     .system(:update, :hawking_collect, [:player, :hawking]) do |dt, t, e|
       @engine.each_entity([:hawking_pickup, :driving_force]) do |h|
         if dist_sq(h[:position][:x],h[:position][:y],e[:position][:x],e[:position][:y]) < sq(@collect_threshold)
-          e[:hawking] += h[:hawking_pickup]
-          h[:delete] = true
+          unless e[:hawking] >= e[:probe][:hawking_cap]
+            e[:hawking] += h[:hawking_pickup]
+            h[:delete] = true
+          end
         end
       end
       e

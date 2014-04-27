@@ -10,16 +10,16 @@ class MultiverseState < IngameState
     @starting_probes = 5
     @hawking_requirement = (@starting_probes/2).to_f+1.0
 
-    @chunk_size = 1000
-    @visited = {}
+    @last_visited_universe = nil
 
     @engine
     .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
       if id == Gosu::MsLeft
         @engine.each_entity([:player, :position]) do |pl|
           if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
-            e[:universe] = gen_universe if e[:universe].empty?
+            e[:universe] = {} if e[:universe].nil?
             enter_universe e[:universe]
+            break
           end
         end
       end
@@ -33,15 +33,6 @@ class MultiverseState < IngameState
       end
       e
     end
-    .system(:update, :procedural, [:player, :position]) do |dt, t, e|
-      xi = e[:position][:x].to_i / @chunk_size
-      yi = e[:position][:y].to_i / @chunk_size
-      if @visited[[xi,yi]].nil?
-        @engine.add_entity(@visited[[xi,yi]] = gen_white_hole((xi+Gosu::random(0,1))*@chunk_size,
-          (yi+Gosu::random(0,1))*@chunk_size))
-      end
-      e
-    end
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
       @engine.each_entity([:player, :hawking]) do |pl|
         e[:scale][:x] = pl[:hawking]/@hawking_requirement
@@ -49,7 +40,8 @@ class MultiverseState < IngameState
       e
     end
     .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
-      if e[:hawking] > @hawking_requirement
+      if e[:hawking] - @hawking_requirement > -0.05
+        e[:hawking] = @hawking_requirement
         puts "Winning!"
       elsif e[:probes] <= 0
         puts "Losing!"
@@ -88,8 +80,7 @@ class MultiverseState < IngameState
       :sprite => make_sprite(@white_hole_img),
       :emitter => gen_emitter,
       :colour => Gosu::Color.rgba(Gosu::random(127,255).to_i, Gosu::random(127,255).to_i,
-        Gosu::random(127,255).to_i, 255),
-      :universe => {} # No universe by default. Will generate one if neccessary
+        Gosu::random(127,255).to_i, 255)
     }
   end
 
@@ -102,10 +93,27 @@ class MultiverseState < IngameState
     }]
   end
 
+  def proc_gen xi, yi
+    @engine
+    .add_entity(gen_white_hole((xi+Gosu::random(0,1))*@chunk_size,
+      (yi+Gosu::random(0,1))*@chunk_size))
+  end
+
   def enter_universe universe
-    universe_state = UniverseState.new @window, universe
-    @window.add_state(:universe_state, universe_state)
+    @last_visited_universe = UniverseState.new @window, universe
+    @window.add_state(:universe_state, @last_visited_universe)
            .change_state(:universe_state)
+  end
+
+  def enter_state
+    super
+
+    unless @last_visited_universe.nil?
+      @engine.each_entity([:player, :hawking]) do |pl|
+        pl[:hawking] += @last_visited_universe.get_hawking
+      end
+      @last_visited_universe = nil
+    end
   end
 
 end

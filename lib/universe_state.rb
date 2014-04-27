@@ -53,7 +53,22 @@ class UniverseState < IngameState
     
   end
 
+  def proc_gen xi, yi
+    @engine
+    .add_entity({
+      :position => {:x => (xi+Gosu::random(0,1))*@chunk_size, :y => (yi+Gosu::random(0,1))*@chunk_size},
+      :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
+      :rotation => {:theta => Gosu::random(0,360)}
+    })
+  end
+
   def return_to_multiverse
     @window.change_state(:multiverse)
+  end
+
+  def get_hawking
+    @engine.each_entity([:player, :hawking]) do |pl|
+      return pl[:hawking]
+    end
   end
 end

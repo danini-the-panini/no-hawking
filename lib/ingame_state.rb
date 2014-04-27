@@ -4,6 +4,8 @@ class IngameState < EngineState
   def initialize window
     super
 
+    @particle = Gosu::Image.new @window, "cursor.png"
+
     @engine
     .input_system(:down, :pcontrol, [:player,:acceleration]) do |id, e|
       case id
@@ -58,6 +60,25 @@ class IngameState < EngineState
       e[:position][:x] += e[:velocity][:x]*dt
       e[:position][:y] += e[:velocity][:y]*dt
       e
+    end
+    .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
+      if t-e[:emitter][:last_emit] > e[:emitter][:period]
+        theta = Gosu::random(0,360)
+
+        @engine.add_entity({
+          :position => e[:position].dup,
+          :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
+            :y => e[:emitter][:velocity]*Math::sin(theta)},
+          :life => e[:emitter][:lifetime],
+          :sprite => e[:emitter][:sprite],
+          :norotate => true
+        })
+      end
+      e
+    end
+    .system(:update, :life, [:life]) do |dt, t, e|
+      e[:life] -= dt
+      e[:life] < 0 ? remove(e) : e
     end
     .system(:update, :follow_mouse, [:position, :rotation, :follow_mouse]) do |dt, t, e|
       mx, my = screen2world(@window.mouse_x, @window.mouse_y)
@@ -114,6 +135,11 @@ class IngameState < EngineState
       :acceleration => {:x => 0, :y => 0},
       :force => {:x => 0, :y => 0}
     }
+  end
+
+  def gen_emitter
+    {:period => 0.5, :velocity => 20, :lifetime => 3, :last_emit => 0, :variation => 0,
+      :sprite => ECS::make_sprite(@particle)}
   end
 
 end

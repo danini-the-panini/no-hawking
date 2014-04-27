@@ -50,6 +50,7 @@ class MultiverseState < IngameState
         :base_size => Gosu::random(0.6,1.4)},
       :position => {:x => x, :y => y},
       :sprite => ECS::make_sprite(@white_hole_img),
+      :emitter => gen_emitter,
       :universe => {} # No universe by default. Will generate one if neccessary
     }
   end

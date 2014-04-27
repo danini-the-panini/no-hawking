@@ -6,6 +6,9 @@ class UniverseState < IngameState
 
     @initial_hawking_cap = 1.0
 
+    @collect_range = 50.0
+    @collect_strength = 10.0
+
     @engine
     .input_system(:down, :escape_universe, [:player]) do |id, e|
       if id == Gosu::KbSpace
@@ -13,6 +16,24 @@ class UniverseState < IngameState
         e.delete(:follow_mouse)
         e.delete(:player)
       end
+    end
+    .system(:update, :hawking_collect, [:player, :hawking]) do |dt, t, e|
+      @engine.each_entity([:hawking_pickup, :driving_force]) do |h|
+        dx = e[:position][:x]-h[:position][:x]
+        dy = e[:position][:y]-h[:position][:y]
+
+        lsq = len_sq(dx,dy)
+        if lsq < sq(@collect_range)
+          len = Math::sqrt(lsq)
+          ratio = 1.0-len/@collect_range
+          h[:driving_force][:x] = (dx/len)*@collect_strength*ratio
+          h[:driving_force][:y] = (dy/len)*@collect_strength*ratio
+        else
+          h[:driving_force][:x] = 0
+          h[:driving_force][:y] = 0
+        end
+      end
+      e
     end
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
       @engine.each_entity([:player, :hawking, :probe]) do |pl|
@@ -77,19 +98,25 @@ class UniverseState < IngameState
       cx = Gosu::random(xi,xj)
       cy = Gosu::random(yi,yj)
       10.times do
-        scale = Gosu::random(0.7,1.8)
-        shade = Gosu::random(0,1)
-        @engine.add_entity({
-          :position => {:x => Gosu::random(-50,50)+cx, :y => Gosu::random(-50,50)+cy},
-          :sprite => make_sprite(Gosu::Image.new @window, "particle.png"),
-          :scale => {x: scale, y: scale},
-          :norotate => true,
-          :hawking_pickup => scale*0.01,
-          :colour => Gosu::Color.rgba(lerp(255,162,shade).to_i,lerp(108,0,shade).to_i,
-            lerp(0,255,shade).to_i,255)
-        })
+        @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy))
       end
     end
+  end
+
+  def gen_hawking_pickup x, y
+    scale = Gosu::random(0.7,1.8)
+    shade = Gosu::random(0,1)
+    {
+      :position => {:x => x, :y => y},
+      :sprite => make_sprite(Gosu::Image.new @window, "particle.png"),
+      :scale => {x: scale, y: scale},
+      :norotate => true,
+      :hawking_pickup => scale*0.01,
+      :mass => scale*0.01,
+      :driving_force => zero,
+      :colour => Gosu::Color.rgba(lerp(255,162,shade).to_i,lerp(108,0,shade).to_i,
+        lerp(0,255,shade).to_i,255)
+    }.merge(motion_components)
   end
 
   def return_to_multiverse

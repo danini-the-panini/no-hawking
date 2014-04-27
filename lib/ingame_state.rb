@@ -203,13 +203,18 @@ class IngameState < EngineState
       :follow_mouse => {},
       :position => zero,
       :rotation => {:theta => 0},
-      :velocity => zero,
-      :acceleration => zero,
-      :force => zero,
       :driving_force => zero,
       :mass => 1,
       :friction => zero.merge({:c => 0.8}),
       :cam_follow => {:factor => @cam_follow_factor},
+    }.merge(motion_components)
+  end
+
+  def motion_components
+    {
+      :velocity => zero,
+      :acceleration => zero,
+      :force => zero
     }
   end
 

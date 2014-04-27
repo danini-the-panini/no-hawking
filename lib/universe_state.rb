@@ -8,6 +8,7 @@ class UniverseState < IngameState
 
     @collect_range = 50.0
     @collect_strength = 10.0
+    @collect_threshold = 10.0
 
     @engine
     .input_system(:down, :escape_universe, [:player]) do |id, e|
@@ -17,7 +18,7 @@ class UniverseState < IngameState
         e.delete(:player)
       end
     end
-    .system(:update, :hawking_collect, [:player, :hawking]) do |dt, t, e|
+    .system(:update, :hawking_pull, [:player, :hawking]) do |dt, t, e|
       @engine.each_entity([:hawking_pickup, :driving_force]) do |h|
         dx = e[:position][:x]-h[:position][:x]
         dy = e[:position][:y]-h[:position][:y]
@@ -31,6 +32,15 @@ class UniverseState < IngameState
         else
           h[:driving_force][:x] = 0
           h[:driving_force][:y] = 0
+        end
+      end
+      e
+    end
+    .system(:update, :hawking_collect, [:player, :hawking]) do |dt, t, e|
+      @engine.each_entity([:hawking_pickup, :driving_force]) do |h|
+        if dist_sq(h[:position][:x],h[:position][:y],e[:position][:x],e[:position][:y]) < sq(@collect_threshold)
+          e[:hawking] += h[:hawking_pickup]
+          h[:delete] = true
         end
       end
       e
@@ -114,6 +124,7 @@ class UniverseState < IngameState
       :hawking_pickup => scale*0.01,
       :mass => scale*0.01,
       :driving_force => zero,
+      :friction => zero.merge({:c => 0.02}),
       :colour => Gosu::Color.rgba(lerp(255,162,shade).to_i,lerp(108,0,shade).to_i,
         lerp(0,255,shade).to_i,255)
     }.merge(motion_components)

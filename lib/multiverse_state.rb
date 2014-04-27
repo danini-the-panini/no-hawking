@@ -7,6 +7,9 @@ class MultiverseState < IngameState
 
     @white_hole_img = Gosu::Image.new @window, "white_hole.png"
 
+    @chunk_size = 1000
+    @visited = {}
+
     @engine
     .system(:draw, :white_hole_draw, [:position, :sprite, :white_hole]) do |e|
       draw_entity e
@@ -30,13 +33,19 @@ class MultiverseState < IngameState
         end
       end
     end
+    .system(:update, :procedural, [:player, :position]) do |dt, t, e|
+      xi = e[:position][:x].to_i / @chunk_size
+      yi = e[:position][:y].to_i / @chunk_size
+      if @visited[[xi,yi]].nil?
+        @engine.add_entity(@visited[[xi,yi]] = gen_white_hole((xi+Gosu::random(0,1))*@chunk_size,
+          (yi+Gosu::random(0,1))*@chunk_size))
+      end
+      e
+    end
     .add_entity(gen_player.merge({
       :player => {:a => 30},
       :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png")
     }))
-    .add_entity(gen_white_hole(-100,-100)) ## TODO: procedurally generate these
-    .add_entity(gen_white_hole(200,-100))
-    .add_entity(gen_white_hole(50,200))
   end
 
   def gen_white_hole x, y

@@ -4,6 +4,9 @@ class IngameState < EngineState
   def initialize window
     super
 
+    @camera = {:x => 0, :y => 0}
+    @camera_padding = 100
+
     @particle = Gosu::Image.new @window, "particle.png"
 
     @engine
@@ -45,6 +48,20 @@ class IngameState < EngineState
     .system(:update, :movement, [:position, :velocity]) do |dt, t, e|
       e[:position][:x] += e[:velocity][:x]*dt
       e[:position][:y] += e[:velocity][:y]*dt
+      e
+    end
+    .system(:update, :move_camera, [:player, :position]) do |dt, t, e|
+      sx, sy = world2screen(e[:position][:x],e[:position][:y])
+      if sx < @camera_padding
+        @camera[:x] -= @camera_padding-sx
+      elsif sx > @window.width-@camera_padding
+        @camera[:x] += @camera_padding-(@window.width-sx)
+      end
+      if sy < @camera_padding
+        @camera[:y] -= @camera_padding-sy
+      elsif sy > @window.height-@camera_padding
+        @camera[:y] += @camera_padding-(@window.height-sy)
+      end
       e
     end
     .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
@@ -116,11 +133,11 @@ class IngameState < EngineState
   end
 
   def screen2world x, y
-    [x-@window.width/2, y-@window.height/2]
+    [x-@window.width/2+@camera[:x], y-@window.height/2+@camera[:y]]
   end
 
   def world2screen x, y
-    [x+@window.width/2, y+@window.height/2]
+    [x+@window.width/2-@camera[:x], y+@window.height/2-@camera[:y]]
   end
 
   def sq(x)

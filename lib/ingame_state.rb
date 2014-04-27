@@ -175,19 +175,22 @@ class IngameState < EngineState
     force
   end
 
+  def zero
+    {:x => 0, :y => 0}
+  end
+
   def gen_player
     {
       :player => {:a => 200},
       :follow_mouse => {},
-      :sprite => {},
-      :position => {:x => 0, :y => 0},
+      :position => zero,
       :rotation => {:theta => 0},
-      :velocity => {:x => 0, :y => 0},
-      :acceleration => {:x => 0, :y => 0},
-      :force => {:x => 0, :y => 0},
-      :driving_force => {:x => 0, :y => 0},
+      :velocity => zero,
+      :acceleration => zero,
+      :force => zero,
+      :driving_force => zero,
       :mass => 1,
-      :friction => {:x => 0, :y => 0, :c => 0.8},
+      :friction => zero.merge({:c => 0.8}),
       :cam_follow => {:factor => @cam_follow_factor},
     }
   end

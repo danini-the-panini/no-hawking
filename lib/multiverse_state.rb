@@ -77,13 +77,11 @@ class MultiverseState < IngameState
 
   def gen_universe
     ## TODO: generate more interesting universes
-    [
-      {
-        :position => {:x => Gosu::random(-200,200), :y => Gosu::random(-200,200)},
-        :sprite => ECS::make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
-        :rotation => {:theta => Gosu::random(0,360)}
-      }
-    ]
+    [{
+      :position => {:x => Gosu::random(-200,200), :y => Gosu::random(-200,200)},
+      :sprite => ECS::make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
+      :rotation => {:theta => Gosu::random(0,360)}
+    }]
   end
 
   def enter_universe universe

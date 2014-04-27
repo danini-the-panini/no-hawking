@@ -5,6 +5,7 @@ class IngameState < EngineState
     super
 
     @camera = {:x => 0, :y => 0}
+    @cam_follow_factor = 1.0
 
     @particle = Gosu::Image.new @window, "particle.png"
 
@@ -151,7 +152,8 @@ class IngameState < EngineState
       :rotation => {:theta => 0},
       :velocity => {:x => 0, :y => 0},
       :acceleration => {:x => 0, :y => 0},
-      :force => {:x => 0, :y => 0}
+      :force => {:x => 0, :y => 0},
+      :cam_follow => {:factor => @cam_follow_factor},
     }
   end
 

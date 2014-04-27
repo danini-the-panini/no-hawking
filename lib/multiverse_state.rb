@@ -6,7 +6,6 @@ class MultiverseState < IngameState
     super
 
     @white_hole_img = Gosu::Image.new @window, "white_hole.png"
-    @cam_follow_factor = 1.0
 
     @starting_probes = 5
     @hawking_requirement = (@starting_probes/2).to_f+1.0
@@ -57,7 +56,6 @@ class MultiverseState < IngameState
     .add_entity(gen_player.merge({
       :player => {:a => 30},
       :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
-      :cam_follow => {:factor => @cam_follow_factor},
       :hawking => 0.0,
       :probes => @starting_probes
     }))
@@ -81,11 +79,6 @@ class MultiverseState < IngameState
   def gen_universe
     ## TODO: generate more interesting universes
     [
-      gen_player.merge({ ## TODO: Change to probe-player
-        :player => {:a => 30},
-        :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
-        :cam_follow => {:factor => @cam_follow_factor}
-      }),
       {
         :position => {:x => Gosu::random(-200,200), :y => Gosu::random(-200,200)},
         :sprite => ECS::make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),

@@ -11,12 +11,14 @@ class MultiverseState < IngameState
     @hawking_requirement = (@starting_probes/2).to_f+1.0
 
     @last_visited_universe = nil
+    @last_entered_hole = nil
 
     @engine
     .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
       if id == Gosu::MsLeft
         @engine.each_entity([:player, :position]) do |pl|
           if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
+            @last_entered_hole = e
             e[:universe] = {} if e[:universe].nil?
             enter_universe e[:universe]
             break
@@ -68,6 +70,10 @@ class MultiverseState < IngameState
       :position => {:x => 10, :y => @window.height-10},
       :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
     })
+    .add_entity({
+      :visited => {},
+      :chunk_size => 1000
+    })
   end
 
   def gen_white_hole x, y
@@ -84,19 +90,12 @@ class MultiverseState < IngameState
     }
   end
 
-  def gen_universe
-    ## TODO: generate more interesting universes
-    [{
-      :position => {:x => Gosu::random(-200,200), :y => Gosu::random(-200,200)},
-      :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
-      :rotation => {:theta => Gosu::random(0,360)}
-    }]
-  end
-
-  def proc_gen xi, yi
-    @engine
-    .add_entity(gen_white_hole((xi+Gosu::random(0,1))*@chunk_size,
-      (yi+Gosu::random(0,1))*@chunk_size))
+  def proc_gen xi, yi, xj, yj
+    3.times do
+      @engine
+      .add_entity(gen_white_hole(Gosu::random(xi,xj),
+        Gosu::random(yi,yj)))
+    end
   end
 
   def enter_universe universe
@@ -112,6 +111,7 @@ class MultiverseState < IngameState
       @engine.each_entity([:player, :hawking]) do |pl|
         pl[:hawking] += @last_visited_universe.get_hawking
       end
+      @last_entered_hole[:universe] = @last_visited_universe.get_entities
       @last_visited_universe = nil
     end
   end

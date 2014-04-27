@@ -7,9 +7,6 @@ class IngameState < EngineState
     @camera = {:x => 0, :y => 0}
     @cam_follow_factor = 1.0
 
-    @chunk_size = 1000
-    @visited = {}
-
     @particle = Gosu::Image.new @window, "particle.png"
 
     @engine
@@ -86,11 +83,15 @@ class IngameState < EngineState
       e
     end
     .system(:update, :procedural, [:player, :position]) do |dt, t, e|
-      xi = e[:position][:x].to_i / @chunk_size
-      yi = e[:position][:y].to_i / @chunk_size
-      if @visited[[xi,yi]].nil?
-        proc_gen xi, yi
-        @visited[[xi,yi]] = true
+      @engine.each_entity([:visited, :chunk_size]) do |pg|
+        xi = e[:position][:x].to_i / pg[:chunk_size]
+        yi = e[:position][:y].to_i / pg[:chunk_size]
+        if pg[:visited][[xi,yi]].nil?
+          x = xi*pg[:chunk_size]
+          y = yi*pg[:chunk_size]
+          proc_gen(x, y, x+pg[:chunk_size], y+pg[:chunk_size])
+          pg[:visited][[xi,yi]] = true
+        end
       end
       e
     end
@@ -115,7 +116,7 @@ class IngameState < EngineState
     })
   end
 
-  def proc_gen xi, yi
+  def proc_gen xi, yi, xj, yj
   end
 
   def draw_entity e
@@ -215,6 +216,10 @@ class IngameState < EngineState
 
   def make_sprite image, anchor={:x => 0.5, :y => 0.5}
     {:image => image, :anchor => anchor}
+  end
+
+  def get_entities
+    @engine.entities
   end
 
   def enter_state

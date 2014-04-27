@@ -32,24 +32,10 @@ class IngameState < EngineState
       end
     end
     .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
-      @window::translate(*world2screen(0,0)) do
-        x = e[:position][:x]
-        y = e[:position][:y]
-        img = e[:sprite][:image]
-        dx = e[:sprite][:anchor][:x]
-        dy = e[:sprite][:anchor][:y]
-        img.draw_rot x, y, 0, e[:rotation][:theta], dx, dy
-      end
+      draw_entity e
     end
     .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
-      @window::translate(*world2screen(0,0)) do
-        x = e[:position][:x]
-        y = e[:position][:y]
-        img = e[:sprite][:image]
-        dx = e[:sprite][:anchor][:x]*img.width
-        dy = e[:sprite][:anchor][:y]*img.height
-        img.draw x-dx, y-dy, 0
-      end
+      draw_entity e
     end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
       e[:velocity][:x] += e[:acceleration][:x]*dt
@@ -62,14 +48,8 @@ class IngameState < EngineState
       e
     end
     .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
-      @window::translate(*world2screen(0,0)) do
-        x = e[:position][:x]
-        y = e[:position][:y]
-        img = e[:sprite][:image]
-        dx = e[:sprite][:anchor][:x]*img.width
-        dy = e[:sprite][:anchor][:y]*img.height
-        img.draw x-dx, y-dy, 0, 1, 1, (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF, :additive
-      end
+      draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF,
+        :draw_mode => :additive})
     end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
       if t-e[:emitter][:last_emit] > e[:emitter][:period]
@@ -108,6 +88,27 @@ class IngameState < EngineState
       :position => {:x => 0, :y => 0},
       :norotate => true
     })
+  end
+
+  def draw_entity e
+    @window::translate(*world2screen(0,0)) do
+      x = e[:position][:x]
+      y = e[:position][:y]
+      img = e[:sprite][:image]
+      dx = e[:sprite][:anchor][:x]
+      dy = e[:sprite][:anchor][:y]
+      if e[:scale]
+        sx = e[:scale][:x]
+        sy = e[:scale][:y]
+      else
+        sx = 1
+        sy = 1
+      end
+      theta = e[:rotation] ? e[:rotation][:theta] : 0
+      colour = e[:colour] || 0xFFFFFFFF
+      mode = e[:draw_mode] || :default
+      img.draw_rot x, y, 0, theta, dx, dy, sx, sy, colour, mode
+    end
   end
 
   def remove e

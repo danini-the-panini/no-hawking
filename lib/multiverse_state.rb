@@ -9,20 +9,14 @@ class MultiverseState < IngameState
 
     @engine
     .system(:draw, :white_hole_draw, [:position, :sprite, :white_hole]) do |e|
-      @window::translate(*world2screen(0,0)) do
-        x = e[:position][:x]
-        y = e[:position][:y]
-        img = e[:sprite][:image]
-        dx = e[:sprite][:anchor][:x]*img.width*e[:white_hole][:size]
-        dy = e[:sprite][:anchor][:y]*img.height*e[:white_hole][:size]
-        img.draw x-dx, y-dy, 0, e[:white_hole][:size], e[:white_hole][:size]
-      end
+      draw_entity e
     end
     .system(:update, :pulse_hole, [:white_hole, :emitter, :pulsate]) do |dt, t, e|
       if t % e[:pulsate][:period] < @window.update_interval
         pulse_factor = Gosu::random(e[:pulsate][:min],e[:pulsate][:max])
-        e[:white_hole][:size] = e[:pulsate][:base_size]*pulse_factor
-        e[:emitter][:velocity] = e[:pulsate][:base_velocity]*e[:white_hole][:size]
+        scale = e[:pulsate][:base_size]*pulse_factor
+        e[:emitter][:velocity] = e[:pulsate][:base_velocity]*scale
+        e[:scale][:x] = e[:scale][:y] = scale
       end
       e
     end
@@ -47,12 +41,15 @@ class MultiverseState < IngameState
 
   def gen_white_hole x, y
     {
-      :white_hole => {:size => 0, :activate_radius => @white_hole_img.width/2},
+      :white_hole => {:activate_radius => @white_hole_img.width/2},
       :pulsate => {:min => Gosu::random(0.7,0.9), :max => Gosu::random(1.1,1.3), :period => 0.2,
         :base_size => Gosu::random(0.6,1.4), :base_velocity => 20},
       :position => {:x => x, :y => y},
+      :scale => {:x => 1, :y => 1},
       :sprite => ECS::make_sprite(@white_hole_img),
       :emitter => gen_emitter,
+      :colour => Gosu::Color.rgba(Gosu::random(127,255).to_i, Gosu::random(127,255).to_i,
+        Gosu::random(127,255).to_i, 255),
       :universe => {} # No universe by default. Will generate one if neccessary
     }
   end

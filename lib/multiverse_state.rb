@@ -16,10 +16,11 @@ class MultiverseState < IngameState
     @engine
     .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
       if id == Gosu::MsLeft
-        @engine.each_entity([:player, :position]) do |pl|
+        @engine.each_entity([:player, :position, :probes]) do |pl|
           if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
             @last_entered_hole = e
             e[:universe] = {} if e[:universe].nil?
+            pl[:probes] -= 1
             enter_universe e[:universe]
             break
           end

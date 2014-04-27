@@ -8,6 +8,9 @@ class MultiverseState < IngameState
     @white_hole_img = Gosu::Image.new @window, "white_hole.png"
     @cam_follow_factor = 1.0
 
+    @starting_probes = 5
+    @hawking_requirement = (@starting_probes/2).to_f+1.0
+
     @chunk_size = 1000
     @visited = {}
 
@@ -40,13 +43,23 @@ class MultiverseState < IngameState
       end
       e
     end
+    .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
+      if e[:hawking] > @hawking_requirement
+        puts "Winning!"
+      elsif e[:probes] <= 0
+        puts "Losing!"
+      end
+      e
+    end
     .system(:draw, :white_hole_draw, [:position, :sprite, :white_hole]) do |e|
       draw_entity e
     end
     .add_entity(gen_player.merge({
       :player => {:a => 30},
       :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
-      :cam_follow => {:factor => @cam_follow_factor}
+      :cam_follow => {:factor => @cam_follow_factor},
+      :hawking => 0.0,
+      :probes => @starting_probes
     }))
   end
 

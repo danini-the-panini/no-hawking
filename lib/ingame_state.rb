@@ -33,12 +33,6 @@ class IngameState < EngineState
         e[:acceleration][:y] -= e[:player][:a]
       end
     end
-    .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
-      draw_entity e
-    end
-    .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
-      draw_entity e
-    end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
       e[:velocity][:x] += e[:acceleration][:x]*dt
       e[:velocity][:y] += e[:acceleration][:y]*dt
@@ -49,9 +43,10 @@ class IngameState < EngineState
       e[:position][:y] += e[:velocity][:y]*dt
       e
     end
-    .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
-      draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF,
-        :draw_mode => :additive})
+    .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|
+      @camera[:x] = e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x]
+      @camera[:y] = e[:position][:y] + e[:cam_follow][:factor]*e[:velocity][:y]
+      e
     end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
       if t-e[:emitter][:last_emit] > e[:emitter][:period]
@@ -83,6 +78,16 @@ class IngameState < EngineState
       e[:position][:x] = mx
       e[:position][:y] = my
       e
+    end
+    .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
+      draw_entity e
+    end
+    .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
+      draw_entity e
+    end
+    .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
+      draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF,
+        :draw_mode => :additive})
     end
     .add_entity({
       :cursor => true,

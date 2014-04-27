@@ -12,18 +12,6 @@ class MultiverseState < IngameState
     @visited = {}
 
     @engine
-    .system(:draw, :white_hole_draw, [:position, :sprite, :white_hole]) do |e|
-      draw_entity e
-    end
-    .system(:update, :pulse_hole, [:white_hole, :emitter, :pulsate]) do |dt, t, e|
-      if t % e[:pulsate][:period] < @window.update_interval
-        pulse_factor = Gosu::random(e[:pulsate][:min],e[:pulsate][:max])
-        scale = e[:pulsate][:base_size]*pulse_factor
-        e[:emitter][:velocity] = e[:pulsate][:base_velocity]*scale
-        e[:scale][:x] = e[:scale][:y] = scale
-      end
-      e
-    end
     .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
       if id == Gosu::MsLeft
         @engine.each_entity([:player, :position]) do |pl|
@@ -34,6 +22,15 @@ class MultiverseState < IngameState
         end
       end
     end
+    .system(:update, :pulse_hole, [:white_hole, :emitter, :pulsate]) do |dt, t, e|
+      if t % e[:pulsate][:period] < @window.update_interval
+        pulse_factor = Gosu::random(e[:pulsate][:min],e[:pulsate][:max])
+        scale = e[:pulsate][:base_size]*pulse_factor
+        e[:emitter][:velocity] = e[:pulsate][:base_velocity]*scale
+        e[:scale][:x] = e[:scale][:y] = scale
+      end
+      e
+    end
     .system(:update, :procedural, [:player, :position]) do |dt, t, e|
       xi = e[:position][:x].to_i / @chunk_size
       yi = e[:position][:y].to_i / @chunk_size
@@ -43,14 +40,13 @@ class MultiverseState < IngameState
       end
       e
     end
-    .system(:update, :cam_follow, [:player, :position, :velocity]) do |dt, t, e|
-      @camera[:x] = e[:position][:x] + @cam_follow_factor*e[:velocity][:x]
-      @camera[:y] = e[:position][:y] + @cam_follow_factor*e[:velocity][:y]
-      e
+    .system(:draw, :white_hole_draw, [:position, :sprite, :white_hole]) do |e|
+      draw_entity e
     end
     .add_entity(gen_player.merge({
       :player => {:a => 30},
-      :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png")
+      :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
+      :cam_follow => {:factor => @cam_follow_factor}
     }))
   end
 
@@ -74,7 +70,8 @@ class MultiverseState < IngameState
     [
       gen_player.merge({ ## TODO: Change to probe-player
         :player => {:a => 30},
-        :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png")
+        :sprite => ECS::make_sprite(Gosu::Image.new @window, "spr_player.png"),
+        :cam_follow => {:factor => @cam_follow_factor}
       }),
       {
         :position => {:x => Gosu::random(-200,200), :y => Gosu::random(-200,200)},

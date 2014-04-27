@@ -101,7 +101,7 @@ class IngameState < EngineState
     .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
       draw_entity e
     end
-    .system(:draw, :sprite_draw, [:position, :sprite, :hud]) do |e|
+    .system(:draw, :hud_draw, [:position, :sprite, :hud]) do |e|
       draw_entity_nocam e
     end
     .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
@@ -191,6 +191,10 @@ class IngameState < EngineState
 
   def zero
     {:x => 0, :y => 0}
+  end
+
+  def lerp a, b, u
+    a*u + b*(1.0-u)
   end
 
   def gen_player

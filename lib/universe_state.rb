@@ -56,7 +56,7 @@ class UniverseState < IngameState
     @engine
     .add_entity(
       gen_player.merge({
-        :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
+        :sprite => make_sprite(Gosu::Image.new @window, "spr_probe.png"),
         :hawking => 0.0,
         :health => 1.0,
         :probe => {:hawking_cap => @initial_hawking_cap, :xp => 0,
@@ -72,6 +72,24 @@ class UniverseState < IngameState
       :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
       :rotation => {:theta => Gosu::random(0,360)}
     })
+
+    3.times do
+      cx = Gosu::random(xi,xj)
+      cy = Gosu::random(yi,yj)
+      10.times do
+        scale = Gosu::random(0.7,1.8)
+        shade = Gosu::random(0,1)
+        @engine.add_entity({
+          :position => {:x => Gosu::random(-50,50)+cx, :y => Gosu::random(-50,50)+cy},
+          :sprite => make_sprite(Gosu::Image.new @window, "particle.png"),
+          :scale => {x: scale, y: scale},
+          :norotate => true,
+          :hawking_pickup => scale*0.01,
+          :colour => Gosu::Color.rgba(lerp(255,162,shade).to_i,lerp(108,0,shade).to_i,
+            lerp(0,255,shade).to_i,255)
+        })
+      end
+    end
   end
 
   def return_to_multiverse

@@ -4,7 +4,7 @@ class IngameState < EngineState
   def initialize window
     super
 
-    @particle = Gosu::Image.new @window, "cursor.png"
+    @particle = Gosu::Image.new @window, "particle.png"
 
     @engine
     .input_system(:down, :pcontrol, [:player,:acceleration]) do |id, e|
@@ -61,6 +61,16 @@ class IngameState < EngineState
       e[:position][:y] += e[:velocity][:y]*dt
       e
     end
+    .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
+      @window::translate(*world2screen(0,0)) do
+        x = e[:position][:x]
+        y = e[:position][:y]
+        img = e[:sprite][:image]
+        dx = e[:sprite][:anchor][:x]*img.width
+        dy = e[:sprite][:anchor][:y]*img.height
+        img.draw x-dx, y-dy, 0, 1, 1, (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF, :additive
+      end
+    end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
       if t-e[:emitter][:last_emit] > e[:emitter][:period]
         theta = Gosu::random(0,360)
@@ -70,8 +80,8 @@ class IngameState < EngineState
           :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
             :y => e[:emitter][:velocity]*Math::sin(theta)},
           :life => e[:emitter][:lifetime],
-          :sprite => e[:emitter][:sprite],
-          :norotate => true
+          :lifetime => e[:emitter][:lifetime],
+          :sprite => e[:emitter][:sprite]
         })
       end
       e

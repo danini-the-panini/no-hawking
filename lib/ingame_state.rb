@@ -28,74 +28,54 @@ class IngameState < EngineState
       end
       e
     end
-    .system(:update, :sandman, [:id, :position]) do |dt, t, e|
-      x, y = screen2world(@window.width/2,@window.height/2)
-      if e[:position][:x] > x-@sleep_radius && e[:position][:x] < x+@sleep_radius && e[:position][:y] > y-@sleep_radius && e[:position][:y] < y+@sleep_radius
-        e.merge({:sleep => nil})
-      else
-        e.merge({:sleep => true})
-      end
-    end
     .system(:update, :collision, [:force, :position, :collidable, :velocity]) do |dt, t, e|
-      unless e[:sleep]
-        @engine.each_entity([:force, :position, :collidable, :velocity]) do |e2|
-          unless e2[:sleep]
-            if e2[:id] > e[:id]
-              mindist = e[:collidable][:radius]+e2[:collidable][:radius]
-              dx = e2[:position][:x] - e[:position][:x]
-              dy = e2[:position][:y] - e[:position][:y]
-              lsq = len_sq(dx,dy)
-              if lsq <= sq(mindist)
-                len = Math::sqrt(lsq)
-                offset = (mindist - len)/2
-                ndx = dx/len
-                ndy = dy/len
-                e[:position][:x] -= ndx*offset
-                e[:position][:y] -= ndy*offset
-                e2[:position][:x] += ndx*offset
-                e2[:position][:y] += ndy*offset
+      @engine.each_entity([:force, :position, :collidable, :velocity]) do |e2|
+        if e2[:id] > e[:id]
+          mindist = e[:collidable][:radius]+e2[:collidable][:radius]
+          dx = e2[:position][:x] - e[:position][:x]
+          dy = e2[:position][:y] - e[:position][:y]
+          lsq = len_sq(dx,dy)
+          if lsq <= sq(mindist)
+            len = Math::sqrt(lsq)
+            offset = (mindist - len)/2
+            ndx = dx/len
+            ndy = dy/len
+            e[:position][:x] -= ndx*offset
+            e[:position][:y] -= ndy*offset
+            e2[:position][:x] += ndx*offset
+            e2[:position][:y] += ndy*offset
 
-                dot_dn = dot(2*e[:velocity][:x],2*e[:velocity][:y],ndx,ndy)
-                e[:velocity][:x] -= dot_dn*ndx
-                e[:velocity][:y] -= dot_dn*ndy
+            dot_dn = dot(2*e[:velocity][:x],2*e[:velocity][:y],ndx,ndy)
+            e[:velocity][:x] -= dot_dn*ndx
+            e[:velocity][:y] -= dot_dn*ndy
 
-                dot_dn2 = dot(2*e2[:velocity][:x],2*e2[:velocity][:y],-ndx,-ndy)
-                e2[:velocity][:x] -= dot_dn2*-ndx
-                e2[:velocity][:y] -= dot_dn2*-ndy
-              end
-            end
+            dot_dn2 = dot(2*e2[:velocity][:x],2*e2[:velocity][:y],-ndx,-ndy)
+            e2[:velocity][:x] -= dot_dn2*-ndx
+            e2[:velocity][:y] -= dot_dn2*-ndy
           end
         end
       end
       e
     end
     .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
-      unless e[:sleep]
-        e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
-        e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
-      end
+      e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
+      e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
       e
     end
     .system(:update, :force, [:acceleration, :force, :mass]) do |dt, t, e|
-      unless e[:sleep]
-        force = total_force(e)
-        e[:acceleration][:x] = force[:x]/e[:mass]
-        e[:acceleration][:y] = force[:y]/e[:mass]
-      end
+      force = total_force(e)
+      e[:acceleration][:x] = force[:x]/e[:mass]
+      e[:acceleration][:y] = force[:y]/e[:mass]
       e
     end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
-      unless e[:sleep]
-        e[:velocity][:x] += e[:acceleration][:x]*dt
-        e[:velocity][:y] += e[:acceleration][:y]*dt
-      end
+      e[:velocity][:x] += e[:acceleration][:x]*dt
+      e[:velocity][:y] += e[:acceleration][:y]*dt
       e
     end
     .system(:update, :movement, [:position, :velocity]) do |dt, t, e|
-      unless e[:sleep]
-        e[:position][:x] += e[:velocity][:x]*dt
-        e[:position][:y] += e[:velocity][:y]*dt
-      end
+      e[:position][:x] += e[:velocity][:x]*dt
+      e[:position][:y] += e[:velocity][:y]*dt
       e
     end
     .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|
@@ -104,19 +84,17 @@ class IngameState < EngineState
       e
     end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
-      unless e[:sleep]
-        if t-e[:emitter][:last_emit] > e[:emitter][:period]
-          theta = Gosu::random(0,360)
+      if t-e[:emitter][:last_emit] > e[:emitter][:period]
+        theta = Gosu::random(0,360)
 
-          @engine.add_entity({
-            :position => e[:position].dup,
-            :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
-              :y => e[:emitter][:velocity]*Math::sin(theta)},
-            :life => e[:emitter][:lifetime],
-            :lifetime => e[:emitter][:lifetime],
-            :sprite => e[:emitter][:sprite]
-          })
-        end
+        @engine.add_entity({
+          :position => e[:position].dup,
+          :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
+            :y => e[:emitter][:velocity]*Math::sin(theta)},
+          :life => e[:emitter][:lifetime],
+          :lifetime => e[:emitter][:lifetime],
+          :sprite => e[:emitter][:sprite]
+        })
       end
       e
     end
@@ -144,12 +122,15 @@ class IngameState < EngineState
         x2 = x2.to_i / pg[:chunk_size]
         y2 = y2.to_i / pg[:chunk_size]
 
+        pg[:visited].each do |k,v|
+          @engine.activate_chunk(k,false)
+        end
+
         (x1..x2).each do |xi|
           (y1..y2).each do |yi|
+            @engine.activate_chunk([xi,yi])
             if pg[:visited][[xi,yi]].nil?
-              x = xi*pg[:chunk_size]
-              y = yi*pg[:chunk_size]
-              proc_gen(x, y, x+pg[:chunk_size], y+pg[:chunk_size])
+              proc_gen(xi, yi, pg[:chunk_size])
               pg[:visited][[xi,yi]] = true
             end
           end
@@ -178,7 +159,7 @@ class IngameState < EngineState
     })
   end
 
-  def proc_gen xi, yi, xj, yj
+  def proc_gen xi, yi, chunk_size
   end
 
   def draw_entity e
@@ -312,7 +293,10 @@ class IngameState < EngineState
   def update
     super
 
-    @window.caption = Gosu::fps.to_s
+    chunks = 0
+    @engine.each_entity([:visited]) { |e| chunks = e[:visited].size }
+
+    @window.caption = "#{Gosu::fps.to_s}, #{chunks}"
   end
 
 end

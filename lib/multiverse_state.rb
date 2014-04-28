@@ -91,11 +91,15 @@ class MultiverseState < IngameState
     }
   end
 
-  def proc_gen xi, yi, xj, yj
+  def proc_gen xi, yi, chunk_size
+    x1 = xi*chunk_size
+    y1 = yi*chunk_size
+    x2 = x1+chunk_size
+    y2 = y1+chunk_size
     3.times do
       @engine
-      .add_entity(gen_white_hole(Gosu::random(xi,xj),
-        Gosu::random(yi,yj)))
+      .add_entity(gen_white_hole(Gosu::random(x1,x2),
+        Gosu::random(y1,y2)),[xi,yi])
     end
   end
 

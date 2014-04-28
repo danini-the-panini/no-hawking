@@ -105,38 +105,41 @@ class UniverseState < IngameState
     
   end
 
-  def proc_gen xi, yi, xj, yj
-    range_x = xj-xi
-    range_y = yj-yi
+  def proc_gen xi, yi, chunk_size
+
+    x1 = xi*chunk_size
+    y1 = yi*chunk_size
+    x2 = x1+chunk_size
+    y2 = y1+chunk_size
 
     # @engine
     # .add_entity({
     #   :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
     #   :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
     #   :rotation => {:theta => Gosu::random(0,360)}
-    # })
+    # },[xi,yi])
     # .add_entity({
     #   :position => {:x => xi+range_x/2, :y => yi+range_y/2},
     #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
     #   :norotate => true
-    # })
+    # },[xi,yi])
 
     3.times do
-      cx = Gosu::random(xi,xj)
-      cy = Gosu::random(yi,yj)
+      cx = Gosu::random(x1,x2)
+      cy = Gosu::random(y1,y2)
       10.times do
-        @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy))
+        @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy),
+          [xi,yi])
       end
     end
 
     moon_sqrt = 2
-    step_x = range_x/moon_sqrt
-    step_y = range_y/moon_sqrt
+    step = chunk_size/moon_sqrt
 
-    (xi...xj).step(step_x) do |sx|
-      (yi...yj).step(step_y) do |sy|
-        x = sx+Gosu::random(0,step_x)
-        y = sy+Gosu::random(0,step_y)
+    (x1...x2).step(step) do |sx|
+      (y1...y2).step(step) do |sy|
+        x = sx+Gosu::random(0,step)
+        y = sy+Gosu::random(0,step)
 
         theta = Gosu::random(0,Math::PI*2)
         speed = Gosu::random(10,20)
@@ -144,7 +147,7 @@ class UniverseState < IngameState
         @engine.add_entity(
           gen_asteroid(x, y).merge({
             :velocity => {:x => Math::cos(theta)*speed, :y => Math::sin(theta)*speed}
-          }))
+          }), [xi,yi])
       end
     end
   end

@@ -26,6 +26,23 @@ class IngameState < EngineState
       end
       e
     end
+    .system(:update, :collision, [:force, :position, :collidable]) do |dt, t, e|
+      @engine.each_entity([:force, :position, :collidable]) do |e2|
+        if e2[:id] > e[:id]
+          mindist = e[:collidable][:radius]+e2[:collidable][:radius]
+          dx = e2[:position][:x] - e[:position][:x]
+          dy = e2[:position][:y] - e[:position][:y]
+          lsq = len_sq(dx,dy)
+          if lsq <= sq(mindist)
+            len = Math::sqrt(lsq)
+            offset = (mindist - len)
+            e[:position][:x] -= (dx/len)*offset
+            e[:position][:y] -= (dy/len)*offset
+          end
+        end
+      end
+      e
+    end
     .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
       e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
       e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]

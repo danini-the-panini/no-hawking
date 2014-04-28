@@ -4,6 +4,8 @@ class UniverseState < IngameState
   def initialize window, universe
     super window
 
+    @spr_luna512 = Gosu::Image.new @window, "spr_luna512.png"
+
     @initial_hawking_cap = 1.0
 
     @collect_range = 50.0
@@ -103,6 +105,9 @@ class UniverseState < IngameState
   end
 
   def proc_gen xi, yi, xj, yj
+    range_x = xj-xi
+    range_y = yj-yi
+
     @engine
     .add_entity({
       :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
@@ -115,6 +120,24 @@ class UniverseState < IngameState
       cy = Gosu::random(yi,yj)
       10.times do
         @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy))
+      end
+    end
+
+    step_x = range_x/5.0
+    step_y = range_y/5.0
+
+    (xi..xj).step(step_x) do |sx|
+      (yi..yj).step(step_y) do |sy|
+        x = sx+Gosu::random(0,step_x)
+        y = sy+Gosu::random(0,step_y)
+
+        theta = Gosu::random(0,Math::PI*2)
+        speed = Gosu::random(10,20)
+
+        @engine.add_entity(
+          gen_asteroid(x, y).merge({
+            :velocity => {:x => Math::cos(theta)*speed, :y => Math::sin(theta)*speed}
+          }))
       end
     end
   end
@@ -133,6 +156,20 @@ class UniverseState < IngameState
       :friction => zero.merge({:c => 0.02}),
       :colour => Gosu::Color.rgba(lerp(255,162,shade).to_i,lerp(108,0,shade).to_i,
         lerp(0,255,shade).to_i,255)
+    }.merge(motion_components)
+  end
+
+  def gen_asteroid x, y
+    scale = Gosu::random(0.07,0.13)
+    {
+      :position => {:x => x, :y => y},
+      :sprite => make_sprite(@spr_luna512),
+      :scale => {:x => scale, :y => scale},
+      :norotate => true,
+      :mass => scale*10,
+      :driving_force => zero,
+      :collision_force => zero,
+      :collidable => {:radius => (@spr_luna512.width/2.0)*scale}
     }.merge(motion_components)
   end
 

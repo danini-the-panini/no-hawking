@@ -224,6 +224,8 @@ class IngameState < EngineState
       :mass => 1,
       :friction => zero.merge({:c => 0.8}),
       :cam_follow => {:factor => @cam_follow_factor},
+      :colliding_force => zero,
+      :collidable => {:radius => 9}
     }.merge(motion_components)
   end
 

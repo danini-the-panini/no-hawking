@@ -78,8 +78,8 @@ class IngameState < EngineState
       e
     end
     .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|
-      @camera[:x] = e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x]
-      @camera[:y] = e[:position][:y] + e[:cam_follow][:factor]*e[:velocity][:y]
+      @camera[:x] += ((e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x])-@camera[:x])*e[:cam_follow][:smoothing]
+      @camera[:y] += ((e[:position][:y] + e[:cam_follow][:factor]*e[:velocity][:y])-@camera[:y])*e[:cam_follow][:smoothing]
       e
     end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
@@ -240,7 +240,7 @@ class IngameState < EngineState
       :driving_force => zero,
       :mass => 1,
       :friction => zero.merge({:c => 0.8}),
-      :cam_follow => {:factor => @cam_follow_factor},
+      :cam_follow => {:factor => @cam_follow_factor, :smoothing => 0.1},
       :collidable => {:radius => 9}
     }.merge(motion_components)
   end

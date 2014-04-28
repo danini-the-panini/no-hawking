@@ -13,6 +13,7 @@ class UniverseState < IngameState
     @collect_threshold = 10.0
 
     @bullet_speed = 150.0
+    @gun_damage = 0.1
 
     @engine
     .input_system(:down, :escape_universe, [:player]) do |id, e|
@@ -73,8 +74,28 @@ class UniverseState < IngameState
           :rotation => {:theta => theta},
           :velocity => {x: @bullet_speed*Math.cos(rad) + e[:velocity][:x],
             :y => @bullet_speed*Math::sin(rad) + e[:velocity][:y] },
-          :bullet => {:damage => @gun_damage}
+          :bullet => {:damage => @gun_damage, :owner => e[:id]},
+          :life => 4, :lifetime => 4
         }))
+      end
+      e
+    end
+    .system(:update, :weapon_collision, [:bullet, :position]) do |dt, t, e|
+      @engine.each_entity([:collidable, :position]) do |e2|
+        unless e[:bullet][:owner] == e2[:id]
+          if dist_sq(e[:position][:x],e[:position][:y],e2[:position][:x],e2[:position][:y]) < sq(e2[:collidable][:radius])
+            e[:delete] = true
+            # TODO: explosion
+            unless e2[:health].nil?
+              e2[:health] -= e[:bullet][:damage]
+              if e2[:health] < 0
+                e2[:delete] = true
+                # TODO: bigger explosion
+                # TODO: award XP / drop Hawking
+              end
+            end
+          end
+        end
       end
       e
     end

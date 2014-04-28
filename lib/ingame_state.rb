@@ -7,6 +7,7 @@ class IngameState < EngineState
     @camera = {:x => 0, :y => 0}
     @cam_follow_factor = 1.0
     @cam_buffer = 20
+    @sleep_radius = 2000
 
     @particle = Gosu::Image.new @window, "particle.png"
 
@@ -28,54 +29,66 @@ class IngameState < EngineState
       e
     end
     .system(:update, :collision, [:force, :position, :collidable]) do |dt, t, e|
-      e[:collision_force] = zero
-      @engine.each_entity([:force, :position, :collidable]) do |e2|
-        if e2[:id] > e[:id]
-          mindist = e[:collidable][:radius]+e2[:collidable][:radius]
-          dx = e2[:position][:x] - e[:position][:x]
-          dy = e2[:position][:y] - e[:position][:y]
-          lsq = len_sq(dx,dy)
-          if lsq <= sq(mindist)
-            len = Math::sqrt(lsq)
-            offset = (mindist - len)/2
-            ndx = dx/len
-            ndy = dy/len
-            e[:position][:x] -= ndx*offset
-            e[:position][:y] -= ndy*offset
-            e2[:position][:x] += ndx*offset
-            e2[:position][:y] += ndy*offset
+      sandman(e) do
+        e[:collision_force] = zero
+        @engine.each_entity([:force, :position, :collidable]) do |e2|
+          sandman(e2) do
+            if e2[:id] > e[:id]
+              mindist = e[:collidable][:radius]+e2[:collidable][:radius]
+              dx = e2[:position][:x] - e[:position][:x]
+              dy = e2[:position][:y] - e[:position][:y]
+              lsq = len_sq(dx,dy)
+              if lsq <= sq(mindist)
+                len = Math::sqrt(lsq)
+                offset = (mindist - len)/2
+                ndx = dx/len
+                ndy = dy/len
+                e[:position][:x] -= ndx*offset
+                e[:position][:y] -= ndy*offset
+                e2[:position][:x] += ndx*offset
+                e2[:position][:y] += ndy*offset
 
-            dot_dn = dot(2*e[:velocity][:x],2*e[:velocity][:y],ndx,ndy)
-            e[:velocity][:x] -= dot_dn*ndx
-            e[:velocity][:y] -= dot_dn*ndy
+                dot_dn = dot(2*e[:velocity][:x],2*e[:velocity][:y],ndx,ndy)
+                e[:velocity][:x] -= dot_dn*ndx
+                e[:velocity][:y] -= dot_dn*ndy
 
-            dot_dn2 = dot(2*e2[:velocity][:x],2*e2[:velocity][:y],-ndx,-ndy)
-            e2[:velocity][:x] -= dot_dn2*-ndx
-            e2[:velocity][:y] -= dot_dn2*-ndy
+                dot_dn2 = dot(2*e2[:velocity][:x],2*e2[:velocity][:y],-ndx,-ndy)
+                e2[:velocity][:x] -= dot_dn2*-ndx
+                e2[:velocity][:y] -= dot_dn2*-ndy
+              end
+            end
           end
         end
       end
       e
     end
     .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
-      e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
-      e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
+      sandman(e) do
+        e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
+        e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
+      end
       e
     end
     .system(:update, :force, [:acceleration, :force, :mass]) do |dt, t, e|
-      force = total_force(e)
-      e[:acceleration][:x] = force[:x]/e[:mass]
-      e[:acceleration][:y] = force[:y]/e[:mass]
+      sandman(e) do
+        force = total_force(e)
+        e[:acceleration][:x] = force[:x]/e[:mass]
+        e[:acceleration][:y] = force[:y]/e[:mass]
+      end
       e
     end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
-      e[:velocity][:x] += e[:acceleration][:x]*dt
-      e[:velocity][:y] += e[:acceleration][:y]*dt
+      sandman(e) do
+        e[:velocity][:x] += e[:acceleration][:x]*dt
+        e[:velocity][:y] += e[:acceleration][:y]*dt
+      end
       e
     end
     .system(:update, :movement, [:position, :velocity]) do |dt, t, e|
-      e[:position][:x] += e[:velocity][:x]*dt
-      e[:position][:y] += e[:velocity][:y]*dt
+      sandman(e) do
+        e[:position][:x] += e[:velocity][:x]*dt
+        e[:position][:y] += e[:velocity][:y]*dt
+      end
       e
     end
     .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|
@@ -84,17 +97,19 @@ class IngameState < EngineState
       e
     end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
-      if t-e[:emitter][:last_emit] > e[:emitter][:period]
-        theta = Gosu::random(0,360)
+      sandman(e) do
+        if t-e[:emitter][:last_emit] > e[:emitter][:period]
+          theta = Gosu::random(0,360)
 
-        @engine.add_entity({
-          :position => e[:position].dup,
-          :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
-            :y => e[:emitter][:velocity]*Math::sin(theta)},
-          :life => e[:emitter][:lifetime],
-          :lifetime => e[:emitter][:lifetime],
-          :sprite => e[:emitter][:sprite]
-        })
+          @engine.add_entity({
+            :position => e[:position].dup,
+            :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
+              :y => e[:emitter][:velocity]*Math::sin(theta)},
+            :life => e[:emitter][:lifetime],
+            :lifetime => e[:emitter][:lifetime],
+            :sprite => e[:emitter][:sprite]
+          })
+        end
       end
       e
     end
@@ -241,6 +256,16 @@ class IngameState < EngineState
     a*u + b*(1.0-u)
   end
 
+  def sandman e
+    x, y = screen2world(@window.width/2,@window.height/2)
+    # if dist_sq(e[:position][:x],e[:position][:y],x,y) < sq(@sleep_radius)
+    #   yield
+    # end
+    if e[:position][:x] > x-@sleep_radius && e[:position][:x] < x+@sleep_radius && e[:position][:y] > y-@sleep_radius && e[:position][:y] < y+@sleep_radius
+      yield
+    end
+  end
+
   def gen_player
     {
       :player => {:a => 200},
@@ -285,6 +310,12 @@ class IngameState < EngineState
 
   def leave_state
     @engine.pause
+  end
+
+  def update
+    super
+
+    @window.caption = Gosu::fps.to_s
   end
 
 end

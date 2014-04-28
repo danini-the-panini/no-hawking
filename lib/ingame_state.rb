@@ -275,8 +275,8 @@ class IngameState < EngineState
     {:image => image, :anchor => anchor}
   end
 
-  def get_entities
-    @engine.entities
+  def get_chunks
+    @engine.chunks
   end
 
   def enter_state

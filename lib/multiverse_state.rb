@@ -51,9 +51,6 @@ class MultiverseState < IngameState
       end
       e
     end
-    .system(:draw, :white_hole_draw, [:position, :sprite, :white_hole]) do |e|
-      draw_entity e
-    end
     .add_entity(gen_player.merge({
       :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
       :hawking => 0.0,
@@ -83,6 +80,7 @@ class MultiverseState < IngameState
       :pulsate => {:min => Gosu::random(0.7,0.9), :max => Gosu::random(1.1,1.3), :period => 0.2,
         :base_size => Gosu::random(0.6,1.4), :base_velocity => 20},
       :position => {:x => x, :y => y},
+      :norotate => true,
       :scale => {:x => 1, :y => 1},
       :sprite => make_sprite(@white_hole_img),
       :emitter => gen_emitter,
@@ -116,7 +114,7 @@ class MultiverseState < IngameState
       @engine.each_entity([:player, :hawking]) do |pl|
         pl[:hawking] += @last_visited_universe.get_hawking
       end
-      @last_entered_hole[:universe] = @last_visited_universe.get_entities
+      @last_entered_hole[:universe] = @last_visited_universe.get_chunks
       @last_visited_universe = nil
     end
   end

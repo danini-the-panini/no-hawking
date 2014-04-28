@@ -88,9 +88,7 @@ class UniverseState < IngameState
         :chunk_size => 1000
       })
     else
-      universe.each do |e|
-        @engine.add_entity e
-      end
+      @engine.inject_state(universe)
     end
 
     @engine

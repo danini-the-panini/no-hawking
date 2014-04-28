@@ -169,7 +169,6 @@ class UniverseState < IngameState
       :norotate => true,
       :mass => scale*10,
       :driving_force => zero,
-      :collision_force => zero,
       :collidable => {:radius => (@spr_luna512.width/2.0)*scale}
     }.merge(motion_components)
   end

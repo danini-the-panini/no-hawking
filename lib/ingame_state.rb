@@ -27,6 +27,7 @@ class IngameState < EngineState
       e
     end
     .system(:update, :collision, [:force, :position, :collidable]) do |dt, t, e|
+      e[:collision_force] = zero
       @engine.each_entity([:force, :position, :collidable]) do |e2|
         if e2[:id] > e[:id]
           mindist = e[:collidable][:radius]+e2[:collidable][:radius]
@@ -44,13 +45,12 @@ class IngameState < EngineState
             e2[:position][:y] += ndy*offset
 
             dot_dn = dot(2*e[:velocity][:x],2*e[:velocity][:y],ndx,ndy)
-            e[:velocity][:x] -= dot_dn*ndx
+            e[:velocity][:x] -=  dot_dn*ndx
             e[:velocity][:y] -= dot_dn*ndy
 
             dot_dn2 = dot(2*e2[:velocity][:x],2*e2[:velocity][:y],-ndx,-ndy)
             e2[:velocity][:x] -= dot_dn2*-ndx
             e2[:velocity][:y] -= dot_dn2*-ndy
-
           end
         end
       end
@@ -241,7 +241,6 @@ class IngameState < EngineState
       :mass => 1,
       :friction => zero.merge({:c => 0.8}),
       :cam_follow => {:factor => @cam_follow_factor},
-      :colliding_force => zero,
       :collidable => {:radius => 9}
     }.merge(motion_components)
   end

@@ -14,6 +14,8 @@ class IngameState < EngineState
     @visited_chunks = {}
     @chunk_size = 1000
 
+    @player = nil
+
     @engine
     .system(:update, :control, [:player, :driving_force]) do |dt, t, e|
       e[:driving_force] = zero
@@ -84,11 +86,10 @@ class IngameState < EngineState
       yi = e[:position][:y].to_i / @chunk_size
 
       if c != :default && (c[0] != xi || c[1] != yi)
-        @engine.add_entity(e,[xi,yi])
-        e = remove(e)
+        e.merge({:chunk => [xi,yi]})
+      else
+        e
       end
-
-      e
     end
     .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|
       @camera[:x] += ((e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x])-@camera[:x])*e[:cam_follow][:smoothing]

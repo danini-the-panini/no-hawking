@@ -12,6 +12,8 @@ class UniverseState < IngameState
     @collect_strength = 10.0
     @collect_threshold = 10.0
 
+    @bullet_speed = 150.0
+
     @engine
     .input_system(:down, :escape_universe, [:player]) do |id, e|
       if id == Gosu::KbSpace
@@ -57,6 +59,22 @@ class UniverseState < IngameState
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
       @engine.each_entity([:player, :hawking, :probe]) do |pl|
         e[:scale][:x] = pl[:hawking]/pl[:probe][:hawking_cap]
+      end
+      e
+    end
+    .system(:update, :weapon, [:player, :probe]) do |dt, t, e|
+      if @engine.down? Gosu::MsLeft
+        mx, my = screen2world(@window.mouse_x, @window.mouse_y)
+        rad = Math::atan2(my-e[:position][:y], mx-e[:position][:x])
+        theta = (rad*180.0)/Math::PI
+        @engine.add_entity(motion_components.merge({
+          :position => e[:position].dup,
+          :sprite => make_sprite(Gosu::Image.new @window, @particle),
+          :rotation => {:theta => theta},
+          :velocity => {x: @bullet_speed*Math.cos(rad) + e[:velocity][:x],
+            :y => @bullet_speed*Math::sin(rad) + e[:velocity][:y] },
+          :bullet => {:damage => @gun_damage}
+        }))
       end
       e
     end
@@ -109,16 +127,16 @@ class UniverseState < IngameState
     x2 = x1+chunk_size
     y2 = y1+chunk_size
 
-    # @engine
+    @engine
+    .add_entity({
+      :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
+      :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
+      :norotate => true
+    },[xi,yi])
     # .add_entity({
     #   :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
     #   :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
     #   :rotation => {:theta => Gosu::random(0,360)}
-    # },[xi,yi])
-    # .add_entity({
-    #   :position => {:x => xi+range_x/2, :y => yi+range_y/2},
-    #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
-    #   :norotate => true
     # },[xi,yi])
 
     3.times do

@@ -186,6 +186,16 @@ class UniverseState < IngameState
           }), [xi,yi])
       end
     end
+
+    10.times do
+      @engine.add_entity({
+        :position => {:x => Gosu::random(x1,x2), :y => Gosu::random(y1, y2)},
+        :enemy => true,
+        :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
+        :colour => 0xFFFF0000,
+        :rotation => {:theta => Gosu::random(0,360)}
+      }.merge(motion_components))
+    end
   end
 
   def gen_hawking_pickup x, y

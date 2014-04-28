@@ -114,6 +114,11 @@ class UniverseState < IngameState
       :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
       :rotation => {:theta => Gosu::random(0,360)}
     })
+    # .add_entity({
+    #   :position => {:x => xi+range_x/2, :y => yi+range_y/2},
+    #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
+    #   :norotate => true
+    # })
 
     3.times do
       cx = Gosu::random(xi,xj)
@@ -123,12 +128,12 @@ class UniverseState < IngameState
       end
     end
 
-    moon_sqrt = 3
+    moon_sqrt = 2
     step_x = range_x/moon_sqrt
     step_y = range_y/moon_sqrt
 
-    (xi..xj).step(step_x) do |sx|
-      (yi..yj).step(step_y) do |sy|
+    (xi...xj).step(step_x) do |sx|
+      (yi...yj).step(step_y) do |sy|
         x = sx+Gosu::random(0,step_x)
         y = sy+Gosu::random(0,step_y)
 

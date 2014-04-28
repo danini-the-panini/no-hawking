@@ -6,6 +6,7 @@ class IngameState < EngineState
 
     @camera = {:x => 0, :y => 0}
     @cam_follow_factor = 1.0
+    @cam_buffer = 20
 
     @particle = Gosu::Image.new @window, "particle.png"
 
@@ -45,7 +46,7 @@ class IngameState < EngineState
             e2[:position][:y] += ndy*offset
 
             dot_dn = dot(2*e[:velocity][:x],2*e[:velocity][:y],ndx,ndy)
-            e[:velocity][:x] -=  dot_dn*ndx
+            e[:velocity][:x] -= dot_dn*ndx
             e[:velocity][:y] -= dot_dn*ndy
 
             dot_dn2 = dot(2*e2[:velocity][:x],2*e2[:velocity][:y],-ndx,-ndy)
@@ -112,15 +113,24 @@ class IngameState < EngineState
       e[:position][:y] = @window.mouse_y
       e
     end
-    .system(:update, :procedural, [:player, :position]) do |dt, t, e|
+    .system(:update, :proc_gen, [:player, :position]) do |dt, t, e|
+      x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
+      x2,y2 = screen2world(@window.width+@cam_buffer,@window.height+@cam_buffer)
       @engine.each_entity([:visited, :chunk_size]) do |pg|
-        xi = e[:position][:x].to_i / pg[:chunk_size]
-        yi = e[:position][:y].to_i / pg[:chunk_size]
-        if pg[:visited][[xi,yi]].nil?
-          x = xi*pg[:chunk_size]
-          y = yi*pg[:chunk_size]
-          proc_gen(x, y, x+pg[:chunk_size], y+pg[:chunk_size])
-          pg[:visited][[xi,yi]] = true
+        x1 = x1.to_i / pg[:chunk_size]
+        y1 = y1.to_i / pg[:chunk_size]
+        x2 = x2.to_i / pg[:chunk_size]
+        y2 = y2.to_i / pg[:chunk_size]
+
+        (x1..x2).each do |xi|
+          (y1..y2).each do |yi|
+            if pg[:visited][[xi,yi]].nil?
+              x = xi*pg[:chunk_size]
+              y = yi*pg[:chunk_size]
+              proc_gen(x, y, x+pg[:chunk_size], y+pg[:chunk_size])
+              pg[:visited][[xi,yi]] = true
+            end
+          end
         end
       end
       e

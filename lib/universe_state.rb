@@ -15,6 +15,8 @@ class UniverseState < IngameState
     @bullet_speed = 150.0
     @gun_damage = 0.1
 
+    @spr_bullet = Gosu::Image.new @window, "spr_bullet.png"
+
     @engine
     .input_system(:down, :escape_universe, [:player]) do |id, e|
       if id == Gosu::KbSpace
@@ -70,7 +72,7 @@ class UniverseState < IngameState
         theta = (rad*180.0)/Math::PI
         @engine.add_entity(motion_components.merge({
           :position => e[:position].dup,
-          :sprite => make_sprite(Gosu::Image.new @window, @particle),
+          :sprite => make_sprite(Gosu::Image.new @window, @spr_bullet),
           :rotation => {:theta => theta},
           :velocity => {x: @bullet_speed*Math.cos(rad) + e[:velocity][:x],
             :y => @bullet_speed*Math::sin(rad) + e[:velocity][:y] },
@@ -103,7 +105,8 @@ class UniverseState < IngameState
       @engine.each_entity([:player, :position]) do |pl|
         dist_to_player = dist_sq(e[:position][:x],e[:position][:y],pl[:position][:x],pl[:position][:y])
         if dist_to_player < sq(e[:enemy][:alert_radius])
-          e[:enemy][:target] = pl[:position].dup
+          e[:enemy][:target] = {:x => pl[:position][:x] + pl[:velocity][:x]*0.016,
+            :y => pl[:position][:y] + pl[:velocity][:y]*0.016}
           e[:enemy][:action] = dist_to_player < sq(e[:enemy][:attack_radius]) ? :attack : :hunt
         elsif e[:enemy][:target].nil? || dist_sq(e[:position][:x],e[:position][:y],e[:enemy][:target][:x],e[:enemy][:target][:y]) < sq(5)
           e[:enemy][:target] = {:x => e[:position][:x] + Gosu::random(-50,50),
@@ -115,24 +118,30 @@ class UniverseState < IngameState
     end
     .system(:update, :ai_action, [:enemy, :position]) do |dt, t, e|
       @engine.each_entity([:player, :position]) do |pl|
+        e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
+        e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
+
         case e[:enemy][:action]
-        when :move, :hunt
-          e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
-          e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
-          if e[:enemy][:action] == :hunt
-            vlen = len(e[:velocity][:x],e[:velocity][:y])
-            vlen2 = vlen-(e[:enemy][:attack_radius]-5)
-            e[:velocity][:x] *= vlen2/vlen
-            e[:velocity][:y] *= vlen2/vlen
-          end
-          rad = Math::atan2(e[:velocity][:y], e[:velocity][:x])
-          e[:rotation][:theta] = (rad/Math::PI)*180.0
-        when :attack
-          e[:velocity] = zero
-          rad = Math::atan2(e[:enemy][:target][:y]-e[:position][:y],
-            e[:enemy][:target][:x]-e[:position][:x])
-          e[:rotation][:theta] = (rad/Math::PI)*180.0
-          # TODO
+        when :hunt, :attack
+          vlen = len(e[:velocity][:x],e[:velocity][:y])
+          vlen2 = vlen-(e[:enemy][:attack_radius]/2.0)
+          e[:velocity][:x] *= vlen2/vlen
+          e[:velocity][:y] *= vlen2/vlen
+        end
+        rad = Math::atan2(e[:velocity][:y], e[:velocity][:x])
+        e[:rotation][:theta] = (rad/Math::PI)*180.0
+
+        if e[:enemy][:action] == :attack
+          @engine.add_entity(motion_components.merge({
+            :position => e[:position].dup,
+            :sprite => make_sprite(Gosu::Image.new @window, @spr_bullet),
+            :rotation => {:theta => e[:rotation][:theta]},
+            :velocity => {x: @bullet_speed*Math.cos(rad) + e[:velocity][:x],
+              :y => @bullet_speed*Math::sin(rad) + e[:velocity][:y] },
+            :bullet => {:damage => @gun_damage, :owner => e[:id]},
+            :life => 4, :lifetime => 4,
+            :colour => 0xFFFF0000
+          }))
         end
       end
     end
@@ -224,13 +233,15 @@ class UniverseState < IngameState
       end
     end
 
-    10.times do
+    5.times do
       @engine.add_entity({
         :position => {:x => Gosu::random(x1,x2), :y => Gosu::random(y1, y2)},
         :enemy => {:alert_radius => 300, :attack_radius => 100},
         :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
         :colour => 0xFFFF0000,
-        :rotation => {:theta => Gosu::random(0,360)}
+        :rotation => {:theta => Gosu::random(0,360)},
+        :collidable => {:radius => 12},
+        :health => 0.5
       }.merge(motion_components))
     end
   end
@@ -261,7 +272,8 @@ class UniverseState < IngameState
       :norotate => true,
       :mass => scale*10,
       :driving_force => zero,
-      :collidable => {:radius => (@spr_luna512.width/2.0)*scale}
+      :collidable => {:radius => (@spr_luna512.width/2.0)*scale},
+      :health => 10
     }.merge(motion_components)
   end
 

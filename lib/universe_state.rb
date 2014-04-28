@@ -16,12 +16,13 @@ class UniverseState < IngameState
     .input_system(:down, :escape_universe, [:player]) do |id, e|
       if id == Gosu::KbSpace
         return_to_multiverse
+        e.delete(:cam_follow)
         e.delete(:follow_mouse)
         e.delete(:player)
       end
     end
-    .system(:update, :hawking_pull, [:player, :hawking]) do |dt, t, e|
-      @engine.each_entity([:hawking_pickup, :driving_force]) do |h|
+    .system(:update, :hawking_pull, [:player, :position, :hawking, :probe]) do |dt, t, e|
+      @engine.each_entity([:hawking_pickup, :position, :driving_force]) do |h|
         dx = e[:position][:x]-h[:position][:x]
         dy = e[:position][:y]-h[:position][:y]
 
@@ -40,8 +41,8 @@ class UniverseState < IngameState
       end
       e
     end
-    .system(:update, :hawking_collect, [:player, :hawking]) do |dt, t, e|
-      @engine.each_entity([:hawking_pickup, :driving_force]) do |h|
+    .system(:update, :hawking_collect, [:player, :hawking, :position]) do |dt, t, e|
+      @engine.each_entity([:hawking_pickup, :position]) do |h|
         if dist_sq(h[:position][:x],h[:position][:y],e[:position][:x],e[:position][:y]) < sq(@collect_threshold)
           unless e[:hawking] >= e[:probe][:hawking_cap]
             e[:hawking] += h[:hawking_pickup]
@@ -108,12 +109,12 @@ class UniverseState < IngameState
     range_x = xj-xi
     range_y = yj-yi
 
-    @engine
-    .add_entity({
-      :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
-      :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
-      :rotation => {:theta => Gosu::random(0,360)}
-    })
+    # @engine
+    # .add_entity({
+    #   :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
+    #   :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
+    #   :rotation => {:theta => Gosu::random(0,360)}
+    # })
     # .add_entity({
     #   :position => {:x => xi+range_x/2, :y => yi+range_y/2},
     #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),

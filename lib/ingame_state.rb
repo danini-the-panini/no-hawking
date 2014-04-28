@@ -7,7 +7,7 @@ class IngameState < EngineState
     @camera = {:x => 0, :y => 0}
     @cam_follow_factor = 1.0
     @cam_buffer = 20
-    @sleep_radius = 2000
+    @sleep_radius = 1000
 
     @particle = Gosu::Image.new @window, "particle.png"
 
@@ -28,11 +28,18 @@ class IngameState < EngineState
       end
       e
     end
-    .system(:update, :collision, [:force, :position, :collidable]) do |dt, t, e|
-      sandman(e) do
-        e[:collision_force] = zero
-        @engine.each_entity([:force, :position, :collidable]) do |e2|
-          sandman(e2) do
+    .system(:update, :sandman, [:id, :position]) do |dt, t, e|
+      x, y = screen2world(@window.width/2,@window.height/2)
+      if e[:position][:x] > x-@sleep_radius && e[:position][:x] < x+@sleep_radius && e[:position][:y] > y-@sleep_radius && e[:position][:y] < y+@sleep_radius
+        e.merge({:sleep => nil})
+      else
+        e.merge({:sleep => true})
+      end
+    end
+    .system(:update, :collision, [:force, :position, :collidable, :velocity]) do |dt, t, e|
+      unless e[:sleep]
+        @engine.each_entity([:force, :position, :collidable, :velocity]) do |e2|
+          unless e2[:sleep]
             if e2[:id] > e[:id]
               mindist = e[:collidable][:radius]+e2[:collidable][:radius]
               dx = e2[:position][:x] - e[:position][:x]
@@ -63,14 +70,14 @@ class IngameState < EngineState
       e
     end
     .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
-      sandman(e) do
+      unless e[:sleep]
         e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
         e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
       end
       e
     end
     .system(:update, :force, [:acceleration, :force, :mass]) do |dt, t, e|
-      sandman(e) do
+      unless e[:sleep]
         force = total_force(e)
         e[:acceleration][:x] = force[:x]/e[:mass]
         e[:acceleration][:y] = force[:y]/e[:mass]
@@ -78,14 +85,14 @@ class IngameState < EngineState
       e
     end
     .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
-      sandman(e) do
+      unless e[:sleep]
         e[:velocity][:x] += e[:acceleration][:x]*dt
         e[:velocity][:y] += e[:acceleration][:y]*dt
       end
       e
     end
     .system(:update, :movement, [:position, :velocity]) do |dt, t, e|
-      sandman(e) do
+      unless e[:sleep]
         e[:position][:x] += e[:velocity][:x]*dt
         e[:position][:y] += e[:velocity][:y]*dt
       end
@@ -97,7 +104,7 @@ class IngameState < EngineState
       e
     end
     .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
-      sandman(e) do
+      unless e[:sleep]
         if t-e[:emitter][:last_emit] > e[:emitter][:period]
           theta = Gosu::random(0,360)
 
@@ -254,16 +261,6 @@ class IngameState < EngineState
 
   def lerp a, b, u
     a*u + b*(1.0-u)
-  end
-
-  def sandman e
-    x, y = screen2world(@window.width/2,@window.height/2)
-    # if dist_sq(e[:position][:x],e[:position][:y],x,y) < sq(@sleep_radius)
-    #   yield
-    # end
-    if e[:position][:x] > x-@sleep_radius && e[:position][:x] < x+@sleep_radius && e[:position][:y] > y-@sleep_radius && e[:position][:y] < y+@sleep_radius
-      yield
-    end
   end
 
   def gen_player

@@ -123,8 +123,9 @@ class UniverseState < IngameState
       end
     end
 
-    step_x = range_x/5.0
-    step_y = range_y/5.0
+    moon_sqrt = 3
+    step_x = range_x/moon_sqrt
+    step_y = range_y/moon_sqrt
 
     (xi..xj).step(step_x) do |sx|
       (yi..yj).step(step_y) do |sy|

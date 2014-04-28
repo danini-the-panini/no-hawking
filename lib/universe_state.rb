@@ -126,12 +126,12 @@ class UniverseState < IngameState
             e[:velocity][:y] *= vlen2/vlen
           end
           rad = Math::atan2(e[:velocity][:y], e[:velocity][:x])
-          e[:rotation][:theta] = rad*Math::PI/180.0
+          e[:rotation][:theta] = (rad/Math::PI)*180.0
         when :attack
           e[:velocity] = zero
           rad = Math::atan2(e[:enemy][:target][:y]-e[:position][:y],
             e[:enemy][:target][:x]-e[:position][:x])
-          e[:rotation][:theta] = rad*Math::PI/180.0
+          e[:rotation][:theta] = (rad/Math::PI)*180.0
           # TODO
         end
       end

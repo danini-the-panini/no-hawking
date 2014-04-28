@@ -23,12 +23,14 @@ class UniverseState < IngameState
         dx = e[:position][:x]-h[:position][:x]
         dy = e[:position][:y]-h[:position][:y]
 
+        factor = @collect_strength * (e[:hawking] >= e[:probe][:hawking_cap] ? -1 : 1)
+
         lsq = len_sq(dx,dy)
         if lsq < sq(@collect_range)
           len = Math::sqrt(lsq)
           ratio = 1.0-len/@collect_range
-          h[:driving_force][:x] = (dx/len)*@collect_strength*ratio
-          h[:driving_force][:y] = (dy/len)*@collect_strength*ratio
+          h[:driving_force][:x] = (dx/len)*factor*ratio
+          h[:driving_force][:y] = (dy/len)*factor*ratio
         else
           h[:driving_force][:x] = 0
           h[:driving_force][:y] = 0
@@ -42,6 +44,8 @@ class UniverseState < IngameState
           unless e[:hawking] >= e[:probe][:hawking_cap]
             e[:hawking] += h[:hawking_pickup]
             h[:delete] = true
+          else
+            e[:hawking] = e[:probe][:hawking_cap]
           end
         end
       end

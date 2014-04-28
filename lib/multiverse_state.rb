@@ -68,10 +68,6 @@ class MultiverseState < IngameState
       :position => {:x => 10, :y => @window.height-10},
       :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
     })
-    .add_entity({
-      :visited => {},
-      :chunk_size => 1000
-    })
   end
 
   def gen_white_hole x, y

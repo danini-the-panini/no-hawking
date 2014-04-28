@@ -11,6 +11,9 @@ class IngameState < EngineState
 
     @particle = Gosu::Image.new @window, "particle.png"
 
+    @visited_chunks = {}
+    @chunk_size = 1000
+
     @engine
     .system(:update, :control, [:player, :driving_force]) do |dt, t, e|
       e[:driving_force] = zero
@@ -77,15 +80,12 @@ class IngameState < EngineState
       e[:position][:x] += e[:velocity][:x]*dt
       e[:position][:y] += e[:velocity][:y]*dt
 
-      @engine.each_entity([:visited, :chunk_size]) do |pg|
-        xi = e[:position][:x].to_i / pg[:chunk_size]
-        yi = e[:position][:y].to_i / pg[:chunk_size]
+      xi = e[:position][:x].to_i / @chunk_size
+      yi = e[:position][:y].to_i / @chunk_size
 
-        if c != :default && (c[0] != xi || c[1] != xj)
-          puts "Moving entity"
-          @engine.add_entity(e,[xi,yi])
-          e = remove(e)
-        end
+      if c != :default && (c[0] != xi || c[1] != yi)
+        @engine.add_entity(e,[xi,yi])
+        e = remove(e)
       end
 
       e
@@ -128,23 +128,22 @@ class IngameState < EngineState
     .system(:update, :proc_gen, [:player, :position]) do |dt, t, e|
       x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
       x2,y2 = screen2world(@window.width+@cam_buffer,@window.height+@cam_buffer)
-      @engine.each_entity([:visited, :chunk_size]) do |pg|
-        x1 = x1.to_i / pg[:chunk_size]
-        y1 = y1.to_i / pg[:chunk_size]
-        x2 = x2.to_i / pg[:chunk_size]
-        y2 = y2.to_i / pg[:chunk_size]
 
-        pg[:visited].each do |k,v|
-          @engine.activate_chunk(k,false)
-        end
+      x1 = x1.to_i / @chunk_size
+      y1 = y1.to_i / @chunk_size
+      x2 = x2.to_i / @chunk_size
+      y2 = y2.to_i / @chunk_size
 
-        (x1..x2).each do |xi|
-          (y1..y2).each do |yi|
-            @engine.activate_chunk([xi,yi])
-            if pg[:visited][[xi,yi]].nil?
-              proc_gen(xi, yi, pg[:chunk_size])
-              pg[:visited][[xi,yi]] = true
-            end
+      @visited_chunks.each do |k,v|
+        @engine.activate_chunk(k,false)
+      end
+
+      (x1..x2).each do |xi|
+        (y1..y2).each do |yi|
+          @engine.activate_chunk([xi,yi])
+          if @visited_chunks[[xi,yi]].nil?
+            proc_gen(xi, yi, @chunk_size)
+            @visited_chunks[[xi,yi]] = true
           end
         end
       end
@@ -305,10 +304,7 @@ class IngameState < EngineState
   def update
     super
 
-    chunks = 0
-    @engine.each_entity([:visited]) { |e| chunks = e[:visited].size }
-
-    @window.caption = "#{Gosu::fps.to_s}, #{chunks}"
+    @window.caption = "#{Gosu::fps.to_s}, #{@visited_chunks.size}"
   end
 
 end

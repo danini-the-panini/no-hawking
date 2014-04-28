@@ -14,8 +14,6 @@ class IngameState < EngineState
     @visited_chunks = {}
     @chunk_size = 1000
 
-    @player = nil
-
     @engine
     .system(:update, :control, [:player, :driving_force]) do |dt, t, e|
       e[:driving_force] = zero

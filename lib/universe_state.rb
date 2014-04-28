@@ -60,9 +60,8 @@ class UniverseState < IngameState
       e
     end
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
-      @engine.each_entity([:player, :hawking, :probe]) do |pl|
-        e[:scale][:x] = pl[:hawking]/pl[:probe][:hawking_cap]
-      end
+      pl = @engine.get_entity @player_id
+      e[:scale][:x] = pl[:hawking]/pl[:probe][:hawking_cap]
       e
     end
     .system(:update, :weapon, [:player, :probe]) do |dt, t, e|
@@ -102,48 +101,46 @@ class UniverseState < IngameState
       e
     end
     .system(:update, :ai_target, [:enemy, :position]) do |dt, t, e|
-      @engine.each_entity([:player, :position]) do |pl|
-        dist_to_player = dist_sq(e[:position][:x],e[:position][:y],pl[:position][:x],pl[:position][:y])
-        if dist_to_player < sq(e[:enemy][:alert_radius])
-          e[:enemy][:target] = {:x => pl[:position][:x] + pl[:velocity][:x]*0.016,
-            :y => pl[:position][:y] + pl[:velocity][:y]*0.016}
-          e[:enemy][:action] = dist_to_player < sq(e[:enemy][:attack_radius]) ? :attack : :hunt
-        elsif e[:enemy][:target].nil? || dist_sq(e[:position][:x],e[:position][:y],e[:enemy][:target][:x],e[:enemy][:target][:y]) < sq(5)
-          e[:enemy][:target] = {:x => e[:position][:x] + Gosu::random(-50,50),
-            :y => e[:position][:y] + Gosu::random(-50,50)}
-          e[:enemy][:action] = :move
-        end
+      pl = @engine.get_entity @player_id
+      dist_to_player = dist_sq(e[:position][:x],e[:position][:y],pl[:position][:x],pl[:position][:y])
+      if dist_to_player < sq(e[:enemy][:alert_radius])
+        e[:enemy][:target] = {:x => pl[:position][:x] + pl[:velocity][:x]*0.016,
+          :y => pl[:position][:y] + pl[:velocity][:y]*0.016}
+        e[:enemy][:action] = dist_to_player < sq(e[:enemy][:attack_radius]) ? :attack : :hunt
+      elsif e[:enemy][:target].nil? || dist_sq(e[:position][:x],e[:position][:y],e[:enemy][:target][:x],e[:enemy][:target][:y]) < sq(5)
+        e[:enemy][:target] = {:x => e[:position][:x] + Gosu::random(-50,50),
+          :y => e[:position][:y] + Gosu::random(-50,50)}
+        e[:enemy][:action] = :move
       end
       e
     end
     .system(:update, :ai_action, [:enemy, :position]) do |dt, t, e|
-      @engine.each_entity([:player, :position]) do |pl|
-        e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
-        e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
+      e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
+      e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
 
-        case e[:enemy][:action]
-        when :hunt, :attack
-          vlen = len(e[:velocity][:x],e[:velocity][:y])
-          vlen2 = vlen-(e[:enemy][:attack_radius]/2.0)
-          e[:velocity][:x] *= vlen2/vlen
-          e[:velocity][:y] *= vlen2/vlen
-        end
-        rad = Math::atan2(e[:velocity][:y], e[:velocity][:x])
-        e[:rotation][:theta] = (rad/Math::PI)*180.0
-
-        if e[:enemy][:action] == :attack
-          @engine.add_entity(motion_components.merge({
-            :position => e[:position].dup,
-            :sprite => make_sprite(Gosu::Image.new @window, @spr_bullet),
-            :rotation => {:theta => e[:rotation][:theta]},
-            :velocity => {x: @bullet_speed*Math.cos(rad) + e[:velocity][:x],
-              :y => @bullet_speed*Math::sin(rad) + e[:velocity][:y] },
-            :bullet => {:damage => @gun_damage, :owner => e[:id]},
-            :life => 4, :lifetime => 4,
-            :colour => 0xFFFF0000
-          }))
-        end
+      case e[:enemy][:action]
+      when :hunt, :attack
+        vlen = len(e[:velocity][:x],e[:velocity][:y])
+        vlen2 = vlen-(e[:enemy][:attack_radius]/2.0)
+        e[:velocity][:x] *= vlen2/vlen
+        e[:velocity][:y] *= vlen2/vlen
       end
+      rad = Math::atan2(e[:velocity][:y], e[:velocity][:x])
+      e[:rotation][:theta] = (rad/Math::PI)*180.0
+
+      if e[:enemy][:action] == :attack
+        @engine.add_entity(motion_components.merge({
+          :position => e[:position].dup,
+          :sprite => make_sprite(Gosu::Image.new @window, @spr_bullet),
+          :rotation => {:theta => e[:rotation][:theta]},
+          :velocity => {x: @bullet_speed*Math.cos(rad) + e[:velocity][:x],
+            :y => @bullet_speed*Math::sin(rad) + e[:velocity][:y] },
+          :bullet => {:damage => @gun_damage, :owner => e[:id]},
+          :life => 4, :lifetime => 4,
+          :colour => 0xFFFF0000
+        }))
+      end
+      e
     end
     .system(:update, :probe_life, [:player, :health]) do |dt, t, e|
       if e[:health] <= 0.0
@@ -184,6 +181,8 @@ class UniverseState < IngameState
         :probe => {:hawking_cap => @initial_hawking_cap, :xp => 0,
           :health_cap => 1.0, :armour_mult => 1.0, :speed_mult => 1.0}
       }))
+
+    @engine.each_entity([:player]) { |e| @player_id = e[:id] }
     
   end
 

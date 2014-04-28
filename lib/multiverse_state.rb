@@ -16,14 +16,12 @@ class MultiverseState < IngameState
     @engine
     .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
       if id == Gosu::MsLeft
-        @engine.each_entity([:player, :position, :probes]) do |pl|
-          if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
-            @last_entered_hole = e
-            e[:universe] = {} if e[:universe].nil?
-            pl[:probes] -= 1
-            enter_universe e[:universe]
-            break
-          end
+        pl = @engine.get_entity @player_id
+        if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
+          @last_entered_hole = e
+          e[:universe] = {} if e[:universe].nil?
+          pl[:probes] -= 1
+          enter_universe e[:universe]
         end
       end
     end
@@ -37,9 +35,8 @@ class MultiverseState < IngameState
       e
     end
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
-      @engine.each_entity([:player, :hawking]) do |pl|
-        e[:scale][:x] = pl[:hawking]/@hawking_requirement
-      end
+      pl = @engine.get_entity @player_id
+      e[:scale][:x] = pl[:hawking]/@hawking_requirement
       e
     end
     .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
@@ -68,6 +65,8 @@ class MultiverseState < IngameState
       :position => {:x => 10, :y => @window.height-10},
       :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
     })
+
+    @engine.each_entity([:player]) { |e| @player_id = e[:id] }
   end
 
   def gen_white_hole x, y

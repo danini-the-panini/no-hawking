@@ -73,9 +73,21 @@ class IngameState < EngineState
       e[:velocity][:y] += e[:acceleration][:y]*dt
       e
     end
-    .system(:update, :movement, [:position, :velocity]) do |dt, t, e|
+    .system(:update, :movement, [:position, :velocity]) do |dt, t, e, c|
       e[:position][:x] += e[:velocity][:x]*dt
       e[:position][:y] += e[:velocity][:y]*dt
+
+      @engine.each_entity([:visited, :chunk_size]) do |pg|
+        xi = e[:position][:x].to_i / pg[:chunk_size]
+        yi = e[:position][:y].to_i / pg[:chunk_size]
+
+        if c != :default && (c[0] != xi || c[1] != xj)
+          puts "Moving entity"
+          @engine.add_entity(e,[xi,yi])
+          e = remove(e)
+        end
+      end
+
       e
     end
     .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|

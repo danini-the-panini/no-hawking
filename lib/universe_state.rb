@@ -99,6 +99,43 @@ class UniverseState < IngameState
       end
       e
     end
+    .system(:update, :ai_target, [:enemy, :position]) do |dt, t, e|
+      @engine.each_entity([:player, :position]) do |pl|
+        dist_to_player = dist_sq(e[:position][:x],e[:position][:y],pl[:position][:x],pl[:position][:y])
+        if dist_to_player < sq(e[:enemy][:alert_radius])
+          e[:enemy][:target] = pl[:position].dup
+          e[:enemy][:action] = dist_to_player < sq(e[:enemy][:attack_radius]) ? :attack : :hunt
+        elsif e[:enemy][:target].nil? || dist_sq(e[:position][:x],e[:position][:y],e[:enemy][:target][:x],e[:enemy][:target][:y]) < sq(5)
+          e[:enemy][:target] = {:x => e[:position][:x] + Gosu::random(-50,50),
+            :y => e[:position][:y] + Gosu::random(-50,50)}
+          e[:enemy][:action] = :move
+        end
+      end
+      e
+    end
+    .system(:update, :ai_action, [:enemy, :position]) do |dt, t, e|
+      @engine.each_entity([:player, :position]) do |pl|
+        case e[:enemy][:action]
+        when :move, :hunt
+          e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
+          e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
+          if e[:enemy][:action] == :hunt
+            vlen = len(e[:velocity][:x],e[:velocity][:y])
+            vlen2 = vlen-(e[:enemy][:attack_radius]-5)
+            e[:velocity][:x] *= vlen2/vlen
+            e[:velocity][:y] *= vlen2/vlen
+          end
+          rad = Math::atan2(e[:velocity][:y], e[:velocity][:x])
+          e[:rotation][:theta] = rad*Math::PI/180.0
+        when :attack
+          e[:velocity] = zero
+          rad = Math::atan2(e[:enemy][:target][:y]-e[:position][:y],
+            e[:enemy][:target][:x]-e[:position][:x])
+          e[:rotation][:theta] = rad*Math::PI/180.0
+          # TODO
+        end
+      end
+    end
     .system(:update, :probe_life, [:player, :health]) do |dt, t, e|
       if e[:health] <= 0.0
         return_to_multiverse # TODO: animate explosion or something first
@@ -190,7 +227,7 @@ class UniverseState < IngameState
     10.times do
       @engine.add_entity({
         :position => {:x => Gosu::random(x1,x2), :y => Gosu::random(y1, y2)},
-        :enemy => true,
+        :enemy => {:alert_radius => 300, :attack_radius => 100},
         :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
         :colour => 0xFFFF0000,
         :rotation => {:theta => Gosu::random(0,360)}

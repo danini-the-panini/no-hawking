@@ -9,6 +9,11 @@ class StartState < WindowState
     @title = Gosu::Image.from_text @window, "No Hawking", Gosu::default_font_name, 50
     @title_x = @window.width/2-@title.width/2
     @title_y = 150
+    @spr_glow = Gosu::Image.new @window, "effects/spr_glow.png"
+
+    @quote = Gosu::Image.from_text @window, "I used to think information was destroyed in black hole.\n
+This was my biggest blunder, or at least my biggest blunder in science.\n
+                                                                    - Stephen Hawking", Gosu::default_font_name, 20
 
     @previous_menu = []
     @menu = [
@@ -82,7 +87,9 @@ class StartState < WindowState
   end
 
   def draw
+    @spr_glow.draw @window.width/2-@spr_glow.width*2.5, @window.height/2-@spr_glow.height*2.5, 0, 5, 5
     @title.draw @title_x, @title_y, 0
+    @quote.draw @window.width-@quote.width-50, @window.height-@quote.height-100, 0
 
     offset = 0
     @menu_images.each do |i|

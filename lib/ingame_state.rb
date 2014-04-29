@@ -10,9 +10,11 @@ class IngameState < EngineState
     @sleep_radius = 1000
 
     @particle = Gosu::Image.new @window, "effects/spr_particle.png"
-    
+
     @spr_bar_bg = Gosu::Image.new @window, "ui/spr_bar_bg.png"
     @spr_bar_hawking = Gosu::Image.new @window, "ui/spr_bar_hawking.png"
+
+    @spr_probe = Gosu::Image.new @window, "actors/spr_probe.png"
 
     @visited_chunks = {}
     @chunk_size = 1000

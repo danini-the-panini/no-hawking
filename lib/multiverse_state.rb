@@ -40,6 +40,13 @@ class MultiverseState < IngameState
       e[:scale][:x] = (300.0*pl[:hawking]/@hawking_requirement)/16.0
       e
     end
+    .system(:update, :probe_icons, [:probe_icon]) do |dt, t, e|
+      pl = @engine.get_entity @player_id
+      if e[:probe_icon] >= pl[:probes]
+        e[:colour] = 0x33FFFFFF
+      end
+      e
+    end
     .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
       if e[:hawking] - @hawking_requirement > -0.05
         e[:hawking] = @hawking_requirement
@@ -67,6 +74,16 @@ class MultiverseState < IngameState
       :sprite => make_sprite((@spr_bar_hawking),{:x => 0.5, :y => 0.0}),
       :scale => {:x => 0.0, :y => 1.0}
     })
+
+    @starting_probes.times do |i|
+      @engine.add_entity({
+        :hud => true,
+        :probe_icon => i,
+        :position => {:x => @window.width/2-@spr_probe.width*(@starting_probes/2.0)+i*@spr_probe.width, :y => @window.height-10},
+        :sprite => make_sprite((@spr_probe),{:x => 0.0, :y => 1.0}),
+        :rotation => {:theta => -90}
+      })
+    end
 
     @engine.each_entity([:player]) { |e| @player_id = e[:id] }
   end

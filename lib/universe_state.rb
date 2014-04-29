@@ -9,7 +9,6 @@ class UniverseState < IngameState
     @spr_luna512 = Gosu::Image.new @window, "celestialbodies/spr_luna1_512.png"
     @spr_alien = Gosu::Image.new @window, "actors/spr_alien.png"
     @spr_shield = Gosu::Image.new @window, "actors/spr_shield.png"
-    @spr_probe = Gosu::Image.new @window, "actors/spr_probe.png"
 
     @spr_bar_hp = Gosu::Image.new @window, "ui/spr_bar_hp.png"
     @spr_bar_xp = Gosu::Image.new @window, "ui/spr_bar_xp.png"

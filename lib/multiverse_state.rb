@@ -16,7 +16,7 @@ class MultiverseState < IngameState
 
     @engine
     .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
-      if id == Gosu::MsLeft
+      if id == Gosu::MsLeft && !@end_game
         pl = @engine.get_entity @player_id
         if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
           @last_entered_hole = e
@@ -55,12 +55,17 @@ class MultiverseState < IngameState
           :sprite => make_sprite(Gosu::Image.from_text(@window, "You are saved", Gosu::default_font_name, 50)),
           :position => {x: @window.width/2, :y => @window.height/2}
         })
+        @end_game ||= t
       elsif e[:probes] <= 0
         @engine.add_entity({
           :hud => true,
           :sprite => make_sprite(Gosu::Image.from_text(@window, "You are lost", Gosu::default_font_name, 50)),
           :position => {x: @window.width/2, :y => @window.height/2}
         })
+        @end_game ||= t
+      end
+      if @end_game && t-@end_game > 5.0
+        @window.change_state(:start)
       end
       e
     end

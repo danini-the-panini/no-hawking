@@ -7,6 +7,7 @@ class UniverseState < IngameState
     @lose_your_shit_on_death = true
 
     @spr_luna512 = Gosu::Image.new @window, "spr_luna512.png"
+    @spr_enemy = Gosu::Image.new @window, "spr_player.png"
 
     @initial_hawking_cap = 1.0
 
@@ -207,7 +208,7 @@ class UniverseState < IngameState
     @engine
     .add_entity(
       gen_player.merge({
-        :sprite => make_sprite(Gosu::Image.new @window, "spr_probe.png"),
+        :sprite => make_sprite(@spr_enemy),
         :hawking => 0.0,
         :health => 1.0,
         :probe => {:hawking_cap => @initial_hawking_cap, :xp => 0,

@@ -149,16 +149,16 @@ class IngameState < EngineState
       e
     end
     .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
-      draw_entity e
+      draw_entity e unless e[:life]
     end
     .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
-      draw_entity e
+      draw_entity e 
     end
     .system(:draw, :hud_draw, [:position, :sprite, :hud]) do |e|
       draw_entity_nocam e
     end
     .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
-      draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | 0x00FFFFFF,
+      draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | (e[:colour] ? (e[:colour] & 0x00FFFFFF) : 0x00FFFFFF),
         :draw_mode => :additive})
     end
     .add_entity({

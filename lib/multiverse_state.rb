@@ -5,7 +5,8 @@ class MultiverseState < IngameState
   def initialize window
     super
 
-    @white_hole_img = Gosu::Image.new @window, "white_hole.png"
+    @white_hole_img = Gosu::Image.new @window, "effects/spr_glow.png"
+    @spr_player = Gosu::Image.new @window, "actors/spr_player.png"
 
     @starting_probes = 5
     @hawking_requirement = (@starting_probes/2).to_f+1.0
@@ -36,7 +37,7 @@ class MultiverseState < IngameState
     end
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
       pl = @engine.get_entity @player_id
-      e[:scale][:x] = pl[:hawking]/@hawking_requirement
+      e[:scale][:x] = (300.0*pl[:hawking]/@hawking_requirement)/16.0
       e
     end
     .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
@@ -49,21 +50,22 @@ class MultiverseState < IngameState
       e
     end
     .add_entity(gen_player.merge({
-      :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
+      :sprite => make_sprite(@spr_player),
       :hawking => 0.0,
       :probes => @starting_probes
     }))
     .add_entity({
       :hud => true,
-      :hawking_bar => true,
-      :position => {:x => 10, :y => @window.height-10},
-      :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar.png"),{:x => 0.0, :y => 1.0}),
-      :scale => {:x => 0.0, :y => 1.0}
+      :position => {:x => @window.width/2, :y => 10},
+      :sprite => make_sprite((@spr_bar_bg),{:x => 0.5, :y => 0.0}),
+      :scale => {:x => 300.0/16.0, :y => 1.0}
     })
     .add_entity({
       :hud => true,
-      :position => {:x => 10, :y => @window.height-10},
-      :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
+      :hawking_bar => true,
+      :position => {:x => @window.width/2, :y => 10},
+      :sprite => make_sprite((@spr_bar_hawking),{:x => 0.5, :y => 0.0}),
+      :scale => {:x => 0.0, :y => 1.0}
     })
 
     @engine.each_entity([:player]) { |e| @player_id = e[:id] }

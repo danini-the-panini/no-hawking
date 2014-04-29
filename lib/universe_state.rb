@@ -6,10 +6,15 @@ class UniverseState < IngameState
 
     @lose_your_shit_on_death = true
 
-    @spr_luna512 = Gosu::Image.new @window, "spr_luna512.png"
-    @spr_enemy = Gosu::Image.new @window, "spr_player.png"
-    @spr_shield = Gosu::Image.new @window, "spr_shield.png"
-    @spr_probe = Gosu::Image.new @window, "spr_probe.png"
+    @spr_luna512 = Gosu::Image.new @window, "celestialbodies/spr_luna1_512.png"
+    @spr_alien = Gosu::Image.new @window, "actors/spr_alien.png"
+    @spr_shield = Gosu::Image.new @window, "actors/spr_shield.png"
+    @spr_probe = Gosu::Image.new @window, "actors/spr_probe.png"
+
+    @spr_bar_hp = Gosu::Image.new @window, "ui/spr_bar_hp.png"
+    @spr_bar_xp = Gosu::Image.new @window, "ui/spr_bar_xp.png"
+
+    @spr_particle = Gosu::Image.new @window, "effects/spr_particle.png"
 
     @initial_hawking_cap = 1.0
 
@@ -25,7 +30,7 @@ class UniverseState < IngameState
     @enemy_bullet_speed = 250.0
     @enemy_damage = 0.1
 
-    @spr_bullet = Gosu::Image.new @window, "spr_bullet.png"
+    @spr_bullet = Gosu::Image.new @window, "actors/spr_bullet.png"
 
     @engine
     .input_system(:down, :escape_universe, [:player]) do |id, e|
@@ -71,13 +76,13 @@ class UniverseState < IngameState
     end
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
       unless (pl = @engine.get_entity @player_id).nil?
-        e[:scale][:x] = pl[:hawking]/pl[:probe][:hawking_cap]
+        e[:scale][:x] = (300.0*pl[:hawking]/pl[:probe][:hawking_cap])/16.0
       end
       e
     end
     .system(:update, :health_bar, [:health_bar]) do |dt, t, e|
       unless (pl = @engine.get_entity @player_id).nil?
-        e[:scale][:x] = pl[:health]/pl[:probe][:health_cap]
+        e[:scale][:x] = (250.0*pl[:health]/pl[:probe][:health_cap])/16.0
       end
       e
     end
@@ -185,27 +190,29 @@ class UniverseState < IngameState
       @engine
       .add_entity({
         :hud => true,
+        :position => {:x => @window.width/2, :y => 10},
+        :sprite => make_sprite((@spr_bar_bg),{:x => 0.5, :y => 0.0}),
+        :scale => {:x => 300.0/16.0, :y => 1.0}
+      })
+      .add_entity({
+        :hud => true,
         :hawking_bar => true,
-        :position => {:x => 10, :y => @window.height-10},
-        :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar.png"),{:x => 0.0, :y => 1.0}),
+        :position => {:x => @window.width/2, :y => 10},
+        :sprite => make_sprite((@spr_bar_hawking),{:x => 0.5, :y => 0.0}),
         :scale => {:x => 0.0, :y => 1.0}
       })
       .add_entity({
         :hud => true,
-        :position => {:x => 10, :y => @window.height-10},
-        :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
+        :position => {:x => @window.width/2, :y => 30},
+        :sprite => make_sprite((@spr_bar_bg),{:x => 0.5, :y => 0.0}),
+        :scale => {:x => 250.0/16.0, :y => 1.0}
       })
       .add_entity({
         :hud => true,
         :health_bar => true,
-        :position => {:x => 320, :y => @window.height-10},
-        :sprite => make_sprite((Gosu::Image.new @window, "health_bar.png"),{:x => 0.0, :y => 1.0}),
+        :position => {:x => @window.width/2, :y => 30},
+        :sprite => make_sprite((@spr_bar_hp),{:x => 0.5, :y => 0.0}),
         :scale => {:x => 0.0, :y => 1.0}
-      })
-      .add_entity({
-        :hud => true,
-        :position => {:x => 320, :y => @window.height-10},
-        :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
       })
       .add_entity({
         :position => zero,
@@ -289,7 +296,7 @@ class UniverseState < IngameState
         :position => {:x => ex, :y => ey},
         :enemy => {:alert_radius => 300, :attack_radius => 100,
           :target => {:x => ex, :y => ey}},
-        :sprite => make_sprite(Gosu::Image.new @window, "spr_player.png"),
+        :sprite => make_sprite(@spr_alien),
         :colour => 0xFFFF0000,
         :rotation => {:theta => Gosu::random(0,360)},
         :collidable => {:radius => 12},
@@ -305,7 +312,7 @@ class UniverseState < IngameState
     shade = Gosu::random(0,1)
     {
       :position => {:x => x, :y => y},
-      :sprite => make_sprite(Gosu::Image.new @window, "particle.png"),
+      :sprite => make_sprite(@spr_particle),
       :scale => {x: scale, y: scale},
       :norotate => true,
       :hawking_pickup => scale*0.01,

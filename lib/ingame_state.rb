@@ -9,7 +9,10 @@ class IngameState < EngineState
     @cam_buffer = 20
     @sleep_radius = 1000
 
-    @particle = Gosu::Image.new @window, "particle.png"
+    @particle = Gosu::Image.new @window, "effects/spr_particle.png"
+    
+    @spr_bar_bg = Gosu::Image.new @window, "ui/spr_bar_bg.png"
+    @spr_bar_hawking = Gosu::Image.new @window, "ui/spr_bar_hawking.png"
 
     @visited_chunks = {}
     @chunk_size = 1000
@@ -163,7 +166,7 @@ class IngameState < EngineState
     end
     .add_entity({
       :cursor => true,
-      :sprite => make_sprite(Gosu::Image.new @window, "cursor.png"),
+      :sprite => make_sprite(Gosu::Image.new @window, "ui/cursor.png"),
       :position => {:x => 0, :y => 0},
       :hud => true
     })
@@ -174,11 +177,11 @@ class IngameState < EngineState
 
   def draw_entity e
     @window::translate(*world2screen(0,0)) do
-      draw_entity_nocam e
+      draw_entity_nocam e, 0
     end
   end
 
-  def draw_entity_nocam e
+  def draw_entity_nocam e, z=1
     x = e[:position][:x]
     y = e[:position][:y]
     img = e[:sprite][:image]
@@ -194,7 +197,7 @@ class IngameState < EngineState
     theta = e[:rotation] ? e[:rotation][:theta] : 0
     colour = e[:colour] || 0xFFFFFFFF
     mode = e[:draw_mode] || :default
-    img.draw_rot x, y, 0, theta, dx, dy, sx, sy, colour, mode
+    img.draw_rot x, y, z, theta, dx, dy, sx, sy, colour, mode
   end
 
   def remove e

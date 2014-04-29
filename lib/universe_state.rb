@@ -4,6 +4,8 @@ class UniverseState < IngameState
   def initialize window, universe
     super window
 
+    @lose_your_shit_on_death = true
+
     @spr_luna512 = Gosu::Image.new @window, "spr_luna512.png"
 
     @initial_hawking_cap = 1.0
@@ -67,6 +69,12 @@ class UniverseState < IngameState
     .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
       unless (pl = @engine.get_entity @player_id).nil?
         e[:scale][:x] = pl[:hawking]/pl[:probe][:hawking_cap]
+      end
+      e
+    end
+    .system(:update, :health_bar, [:health_bar]) do |dt, t, e|
+      unless (pl = @engine.get_entity @player_id).nil?
+        e[:scale][:x] = pl[:health]/pl[:probe][:health_cap]
       end
       e
     end
@@ -153,6 +161,9 @@ class UniverseState < IngameState
     end
     .system(:update, :probe_life, [:player, :health]) do |dt, t, e|
       if e[:health] <= 0.0
+        if @lose_your_shit_on_death
+          e[:hawking] = 0
+        end
         return_to_multiverse # TODO: animate explosion or something first
         remove e
       else
@@ -172,6 +183,18 @@ class UniverseState < IngameState
       .add_entity({
         :hud => true,
         :position => {:x => 10, :y => @window.height-10},
+        :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
+      })
+      .add_entity({
+        :hud => true,
+        :health_bar => true,
+        :position => {:x => 320, :y => @window.height-10},
+        :sprite => make_sprite((Gosu::Image.new @window, "health_bar.png"),{:x => 0.0, :y => 1.0}),
+        :scale => {:x => 0.0, :y => 1.0}
+      })
+      .add_entity({
+        :hud => true,
+        :position => {:x => 320, :y => @window.height-10},
         :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
       })
     else

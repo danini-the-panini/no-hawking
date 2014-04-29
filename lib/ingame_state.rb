@@ -154,10 +154,10 @@ class IngameState < EngineState
       e
     end
     .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
-      draw_entity e unless e[:life]
+      draw_entity e unless e[:life] || e[:hud]
     end
     .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
-      draw_entity e 
+      draw_entity e unless e[:hud]
     end
     .system(:draw, :hud_draw, [:position, :sprite, :hud]) do |e|
       draw_entity_nocam e

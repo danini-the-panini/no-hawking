@@ -50,9 +50,17 @@ class MultiverseState < IngameState
     .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
       if e[:hawking] - @hawking_requirement > -0.05
         e[:hawking] = @hawking_requirement
-        puts "Winning!"
+        @engine.add_entity({
+          :hud => true,
+          :sprite => make_sprite(Gosu::Image.from_text(@window, "You Win", Gosu::default_font_name, 50)),
+          :position => {x: @window.width/2, :y => @window.height/2}
+        })
       elsif e[:probes] <= 0
-        puts "Losing!"
+        @engine.add_entity({
+          :hud => true,
+          :sprite => make_sprite(Gosu::Image.from_text(@window, "You Lose", Gosu::default_font_name, 50)),
+          :position => {x: @window.width/2, :y => @window.height/2}
+        })
       end
       e
     end

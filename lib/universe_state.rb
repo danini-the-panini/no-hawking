@@ -8,6 +8,8 @@ class UniverseState < IngameState
 
     @spr_luna512 = Gosu::Image.new @window, "spr_luna512.png"
     @spr_enemy = Gosu::Image.new @window, "spr_player.png"
+    @spr_shield = Gosu::Image.new @window, "spr_shield.png"
+    @spr_probe = Gosu::Image.new @window, "spr_probe.png"
 
     @initial_hawking_cap = 1.0
 
@@ -171,6 +173,13 @@ class UniverseState < IngameState
         e
       end
     end
+    .system(:update, :shield_follow, [:component, :position]) do |dt, t, e|
+      unless (pl = @engine.get_entity @player_id).nil?
+        e[:position][:x] = pl[:position][:x]+pl[:velocity][:x]*dt
+        e[:position][:y] = pl[:position][:y]+pl[:velocity][:y]*dt
+      end
+      e
+    end
 
     if universe.nil? || universe.empty?
       @engine
@@ -198,6 +207,12 @@ class UniverseState < IngameState
         :position => {:x => 320, :y => @window.height-10},
         :sprite => make_sprite((Gosu::Image.new @window, "hawking_bar_border.png"),{:x => 0.0, :y => 1.0})
       })
+      .add_entity({
+        :position => zero,
+        :sprite => make_sprite(@spr_shield),
+        :component => true,
+        :norotate => true
+      })
     else
       @engine.inject_state(universe)
       universe.each do |k,c|
@@ -208,7 +223,7 @@ class UniverseState < IngameState
     @engine
     .add_entity(
       gen_player.merge({
-        :sprite => make_sprite(@spr_enemy),
+        :sprite => make_sprite(@spr_probe),
         :hawking => 0.0,
         :health => 1.0,
         :probe => {:hawking_cap => @initial_hawking_cap, :xp => 0,
@@ -228,12 +243,12 @@ class UniverseState < IngameState
     x2 = x1+chunk_size
     y2 = y1+chunk_size
 
-    @engine
-    .add_entity({
-      :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
-      :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
-      :norotate => true
-    },[xi,yi])
+    # @engine
+    # .add_entity({
+    #   :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
+    #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
+    #   :norotate => true
+    # },[xi,yi])
     # .add_entity({
     #   :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
     #   :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),

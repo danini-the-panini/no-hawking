@@ -16,8 +16,8 @@ class UniverseState < IngameState
     @player_bullet_speed = 300.0
     @player_damage = 0.1
 
-    @enemy_fire_rate = 2.0
-    @enemy_bullet_speed = 500.0
+    @enemy_fire_rate = 10.0
+    @enemy_bullet_speed = 250.0
     @enemy_damage = 0.1
 
     @spr_bullet = Gosu::Image.new @window, "spr_bullet.png"

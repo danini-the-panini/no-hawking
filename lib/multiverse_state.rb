@@ -128,7 +128,8 @@ class MultiverseState < IngameState
       @engine.each_entity([:player, :hawking]) do |pl|
         pl[:hawking] += @last_visited_universe.get_hawking
       end
-      @last_entered_hole[:universe] = @last_visited_universe.get_chunks
+      # @last_entered_hole[:universe] = @last_visited_universe.get_chunks
+      @last_entered_hole[:delete] = true
       @last_visited_universe = nil
     end
   end

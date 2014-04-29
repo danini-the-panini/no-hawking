@@ -6,6 +6,8 @@ class StartState < WindowState
   def initialize window
     super
 
+    @music = Gosu::Song.new @window, "mus/Agitated Ambient.mp3"
+
     @title = Gosu::Image.from_text @window, "No Hawking", Gosu::default_font_name, 50
     @title_x = @window.width/2-@title.width/2
     @title_y = 150
@@ -98,6 +100,14 @@ This was my biggest blunder, or at least my biggest blunder in science.\n
     end
 
     @selector_image.draw @menu_x-@selector_image.width, @menu_y+@selected*@menu_dy, 0
+  end
+
+  def enter_state
+    @music.play true
+  end
+
+  def leave_state
+    @music.stop
   end
 
 end

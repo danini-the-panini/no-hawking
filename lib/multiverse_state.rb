@@ -5,6 +5,8 @@ class MultiverseState < IngameState
   def initialize window
     super
 
+    @music = Gosu::Song.new @window, "mus/Calm Ambient.mp3"
+
     @white_hole_img = Gosu::Image.new @window, "effects/spr_glow.png"
     @spr_player = Gosu::Image.new @window, "actors/spr_player.png"
 
@@ -137,6 +139,8 @@ class MultiverseState < IngameState
   def enter_state
     super
 
+    @music.play true
+
     unless @last_visited_universe.nil?
       @engine.each_entity([:player, :hawking]) do |pl|
         pl[:hawking] += @last_visited_universe.get_hawking
@@ -145,6 +149,10 @@ class MultiverseState < IngameState
       @last_entered_hole[:delete] = true
       @last_visited_universe = nil
     end
+  end
+
+  def leave_state
+    @music.stop
   end
 
 end

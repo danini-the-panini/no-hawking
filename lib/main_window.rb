@@ -10,7 +10,7 @@ class MainWindow < Gosu::Window
   end
 
   def change_state new_state
-    @current_state.leave_state unless @change_state.nil?
+    @current_state.leave_state unless @current_state.nil?
     @current_state = @states[new_state]
     @current_state.enter_state
     self

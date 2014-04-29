@@ -4,6 +4,8 @@ class UniverseState < IngameState
   def initialize window, universe
     super window
 
+    @music = Gosu::Song.new @window, "mus/Tense Ambient.mp3"
+
     @lose_your_shit_on_death = true
 
     @spr_luna512 = Gosu::Image.new @window, "celestialbodies/spr_luna1_512.png"
@@ -345,5 +347,13 @@ class UniverseState < IngameState
     @engine.each_entity([:player, :hawking]) do |pl|
       return pl[:hawking]
     end
+  end
+  
+  def enter_state
+    @music.play true
+  end
+
+  def leave_state
+    @music.stop
   end
 end

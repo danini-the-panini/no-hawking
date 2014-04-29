@@ -52,13 +52,13 @@ class MultiverseState < IngameState
         e[:hawking] = @hawking_requirement
         @engine.add_entity({
           :hud => true,
-          :sprite => make_sprite(Gosu::Image.from_text(@window, "You Win", Gosu::default_font_name, 50)),
+          :sprite => make_sprite(Gosu::Image.from_text(@window, "You are saved", Gosu::default_font_name, 50)),
           :position => {x: @window.width/2, :y => @window.height/2}
         })
       elsif e[:probes] <= 0
         @engine.add_entity({
           :hud => true,
-          :sprite => make_sprite(Gosu::Image.from_text(@window, "You Lose", Gosu::default_font_name, 50)),
+          :sprite => make_sprite(Gosu::Image.from_text(@window, "You are lost", Gosu::default_font_name, 50)),
           :position => {x: @window.width/2, :y => @window.height/2}
         })
       end

@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'gosu'
-gem 'gosu-ecs'
+gem 'gosu-ecs', :git => 'https://github.com/jellymann/gosu-ecs.git'
 
 group :development do
   gem 'rake'

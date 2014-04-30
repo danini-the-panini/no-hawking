@@ -6,7 +6,7 @@ require 'releasy'
 #<<<
 Releasy::Project.new do
   name "No Hawking"
-  version "1.0.2.1"
+  version "1.0.2.2"
   verbose # Can be removed if you don't want to see all build messages.
 
   executable "lib/game.rb"

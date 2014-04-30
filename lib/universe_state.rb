@@ -4,7 +4,7 @@ class UniverseState < IngameState
   def initialize window, universe
     super window
 
-    @music = Gosu::Song.new @window, "mus/Tense Ambient.mp3"
+    @music = Gosu::Song.new @window, "mus/Tense Ambient.ogg"
 
     @lose_your_shit_on_death = true
 

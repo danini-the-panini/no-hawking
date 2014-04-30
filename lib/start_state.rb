@@ -6,7 +6,7 @@ class StartState < WindowState
   def initialize window
     super
 
-    @music = Gosu::Song.new @window, "mus/Agitated Ambient.mp3"
+    @music = Gosu::Song.new @window, "mus/Agitated Ambient.ogg"
 
     @title = Gosu::Image.from_text @window, "No Hawking", Gosu::default_font_name, 50
     @title_x = @window.width/2-@title.width/2

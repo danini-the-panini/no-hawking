@@ -5,7 +5,7 @@ class MultiverseState < IngameState
   def initialize window
     super
 
-    @music = Gosu::Song.new @window, "mus/Calm Ambient.mp3"
+    @music = Gosu::Song.new @window, "mus/Calm Ambient.ogg"
 
     @white_hole_img = Gosu::Image.new @window, "effects/spr_glow.png"
     @spr_player = Gosu::Image.new @window, "actors/spr_player.png"

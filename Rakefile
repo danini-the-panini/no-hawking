@@ -10,7 +10,7 @@ Releasy::Project.new do
   verbose # Can be removed if you don't want to see all build messages.
 
   executable "lib/game.rb"
-  files ["lib/*.rb", "celestialbodies/*.png", "actors/*.png", "effects/*.png", "ui/*.png", "mus/*.mp3"]
+  files ["lib/*.rb", "celestialbodies/*.png", "actors/*.png", "effects/*.png", "ui/*.png", "mus/*.ogg"]
   add_link "http://www.github.com/jellymann/no-hawking", "Github Page"
   exclude_encoding # Applications that don't use advanced encoding (e.g. Japanese characters) can save build size with this.
 

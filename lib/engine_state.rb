@@ -1,4 +1,4 @@
-require 'gosu-ecs'
+require_relative 'gosu-ecs'
 require_relative 'window_state'
 
 class EngineState < WindowState

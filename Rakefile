@@ -32,7 +32,7 @@ Releasy::Project.new do
   end
 
   add_build :windows_installer do
-    start_menu_group "Jellymann Games"
+    start_menu_group "LD29"
     executable_type :windows # Assuming you don't want it to run with a console window.
 
   end

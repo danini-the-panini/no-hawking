@@ -6,17 +6,17 @@ require 'releasy'
 #<<<
 Releasy::Project.new do
   name "No Hawking"
-  version "1.0.1"
+  version "1.0.2"
   verbose # Can be removed if you don't want to see all build messages.
 
   executable "lib/game.rb"
-  files ["lib/*.rb", "celestialbodies/*.png", "actors/*.png", "effects/*.png", "ui/*.png"]
+  files ["lib/*.rb", "celestialbodies/*.png", "actors/*.png", "effects/*.png", "ui/*.png", "mus/*.mp3"]
   add_link "http://www.github.com/jellymann/no-hawking", "Github Page"
   exclude_encoding # Applications that don't use advanced encoding (e.g. Japanese characters) can save build size with this.
 
   # Create a variety of releases, for all platforms.
   add_build :osx_app do
-    url "com.jellymann.nohawking"
+    url "com.cryogenicmushrooms.nohawking"
     wrapper "wrappers/gosu-mac-wrapper-0.7.47.tar.gz" # Assuming this is where you downloaded this file.
     add_package :dmg
   end
@@ -32,7 +32,7 @@ Releasy::Project.new do
   end
 
   add_build :windows_installer do
-    start_menu_group "Jellymann Games"
+    start_menu_group "LD29"
     executable_type :windows # Assuming you don't want it to run with a console window.
 
   end

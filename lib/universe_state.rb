@@ -330,6 +330,10 @@ class UniverseState < IngameState
       return pl[:hawking]
     end
   end
+
+  def get_state
+    @engine.nodes
+  end
   
   def enter_state
     @music.play true

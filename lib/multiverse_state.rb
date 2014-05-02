@@ -83,7 +83,7 @@ class MultiverseState < IngameState
       :position => {:x => @window.width/2, :y => 10},
       :sprite => make_sprite((@spr_bar_hawking),{:x => 0.5, :y => 0.0}),
       :scale => {:x => 0.0, :y => 1.0}
-    }, :hud)
+    }, :hud, :hawking_bar)
 
     @starting_probes.times do |i|
       @engine.add_entity({
@@ -91,7 +91,7 @@ class MultiverseState < IngameState
         :position => {:x => @window.width/2-@spr_probe.width*(@starting_probes/2.0)+i*@spr_probe.width, :y => @window.height-10},
         :sprite => make_sprite((@spr_probe),{:x => 0.0, :y => 1.0}),
         :rotation => {:theta => -90}
-      }, :hud)
+      }, :hud, :probe_icon)
     end
 
   end
@@ -134,11 +134,11 @@ class MultiverseState < IngameState
     @music.play true
 
     unless @last_visited_universe.nil?
-      @engine.each_entity([:player]) do |pl|
+      @engine.each_entity(:player) do |pl|
         pl[:hawking] += @last_visited_universe.get_hawking
       end
-      # @last_entered_hole[:universe] = @last_visited_universe.get_chunks
-      @engine.remove_entity(@last_entered_hole, :white_hole)
+      # @last_entered_hole[:universe] = @last_visited_universe.get_state
+      @engine.remove_entity @last_entered_hole, :all
       @last_visited_universe = nil
     end
   end

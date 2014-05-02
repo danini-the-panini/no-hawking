@@ -72,6 +72,10 @@ module Tentative
       end
     end
 
+    def nodes
+      @nodes
+    end
+
     def button_down id
       @systems[:btn_down].each do |name, sys|
         @nodes[sys.first].each do |i, e|

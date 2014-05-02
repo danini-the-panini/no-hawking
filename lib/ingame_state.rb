@@ -20,7 +20,7 @@ class IngameState < EngineState
     @chunk_size = 1000
 
     @engine
-    .system(:update, :control, [:player, :driving_force]) do |dt, t, e|
+    .add_system(:update, :control, :player) do |e, dt, t|
       e[:driving_force] = zero
       if @engine.down? Gosu::KbA
         e[:driving_force][:x] -= e[:player][:a]
@@ -36,8 +36,8 @@ class IngameState < EngineState
       end
       e
     end
-    .system(:update, :collision, [:force, :position, :collidable, :velocity]) do |dt, t, e|
-      @engine.each_entity([:force, :position, :collidable, :velocity]) do |e2|
+    .add_system(:update, :collision, :collidable) do |e, dt, t|
+      @engine.each_entity(:collidable) do |e2|
         if e2[:id] > e[:id]
           mindist = e[:collidable][:radius]+e2[:collidable][:radius]
           dx = e2[:position][:x] - e[:position][:x]
@@ -65,41 +65,41 @@ class IngameState < EngineState
       end
       e
     end
-    .system(:update, :friction, [:force, :velocity, :friction]) do |dt, t, e|
+    .add_system(:update, :friction, :friction) do |e, dt, t|
       e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
       e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
       e
     end
-    .system(:update, :force, [:acceleration, :force, :mass]) do |dt, t, e|
+    .add_system(:update, :force, :force) do |e, dt, t|
       force = total_force(e)
       e[:acceleration][:x] = force[:x]/e[:mass]
       e[:acceleration][:y] = force[:y]/e[:mass]
       e
     end
-    .system(:update, :acceleration, [:velocity, :acceleration]) do |dt, t, e|
+    .add_system(:update, :acceleration, :acceleration) do |e, dt, t|
       e[:velocity][:x] += e[:acceleration][:x]*dt
       e[:velocity][:y] += e[:acceleration][:y]*dt
       e
     end
-    .system(:update, :movement, [:position, :velocity]) do |dt, t, e, c|
+    .add_system(:update, :movement, :velocity) do |e, dt, t, c|
       e[:position][:x] += e[:velocity][:x]*dt
       e[:position][:y] += e[:velocity][:y]*dt
 
       xi = e[:position][:x].to_i / @chunk_size
       yi = e[:position][:y].to_i / @chunk_size
 
-      if c != :default && (c[0] != xi || c[1] != yi)
-        e.merge({:chunk => [xi,yi]})
-      else
-        e
-      end
+      # if c != :default && (c[0] != xi || c[1] != yi)
+      #   e.merge({:chunk => [xi,yi]})
+      # else
+      #   e
+      # end
     end
-    .system(:update, :cam_follow, [:cam_follow, :position, :velocity]) do |dt, t, e|
+    .add_system(:update, :cam_follow, :cam_follow) do |e, dt, t|
       @camera[:x] += ((e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x])-@camera[:x])*e[:cam_follow][:smoothing]
       @camera[:y] += ((e[:position][:y] + e[:cam_follow][:factor]*e[:velocity][:y])-@camera[:y])*e[:cam_follow][:smoothing]
       e
     end
-    .system(:update, :emitter, [:emitter, :position]) do |dt, t, e|
+    .add_system(:update, :emitter, [:emitter, :position]) do |e, dt, t|
       if t-e[:emitter][:last_emit] > e[:emitter][:period]
         theta = Gosu::random(0,360)
 
@@ -114,22 +114,22 @@ class IngameState < EngineState
       end
       e
     end
-    .system(:update, :life, [:life]) do |dt, t, e|
+    .add_system(:update, :life, :life) do |e, dt, t|
       e[:life] -= dt
-      e[:life] < 0 ? remove(e) : e
+      @engine.remove e, :all if e[:life] < 0
     end
-    .system(:update, :follow_mouse, [:position, :rotation, :follow_mouse]) do |dt, t, e|
+    .add_system(:update, :follow_mouse, :follow_mouse) do |e, dt, t|
       mx, my = screen2world(@window.mouse_x, @window.mouse_y)
       rad = Math::atan2(my-e[:position][:y], mx-e[:position][:x])
       e[:rotation][:theta] = (rad*180.0)/Math::PI
       e
     end
-    .system(:update, :cursor, [:position, :cursor]) do |dt, t, e|
+    .add_system(:update, :cursor, :cursor) do |e, dt, t|
       e[:position][:x] = @window.mouse_x
       e[:position][:y] = @window.mouse_y
       e
     end
-    .system(:update, :proc_gen, [:player, :position]) do |dt, t, e|
+    .add_system(:update, :proc_gen, :player) do |e, dt, t|
       x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
       x2,y2 = screen2world(@window.width+@cam_buffer,@window.height+@cam_buffer)
 
@@ -139,12 +139,12 @@ class IngameState < EngineState
       y2 = y2.to_i / @chunk_size
 
       @visited_chunks.each do |k,v|
-        @engine.activate_chunk(k,false)
+        # @engine.activate_chunk(k,false)
       end
 
       (x1..x2).each do |xi|
         (y1..y2).each do |yi|
-          @engine.activate_chunk([xi,yi])
+          # @engine.activate_chunk([xi,yi])
           if @visited_chunks[[xi,yi]].nil?
             proc_gen(xi, yi, @chunk_size)
             @visited_chunks[[xi,yi]] = true
@@ -153,16 +153,13 @@ class IngameState < EngineState
       end
       e
     end
-    .system(:draw, :sprite_draw_rotated, [:position, :sprite, :rotation]) do |e|
+    .add_system(:draw, :sprite_draw, :drawable) do |e|
       draw_entity e unless e[:life] || e[:hud]
     end
-    .system(:draw, :sprite_draw, [:position, :sprite, :norotate]) do |e|
-      draw_entity e unless e[:hud]
-    end
-    .system(:draw, :hud_draw, [:position, :sprite, :hud]) do |e|
+    .add_system(:draw, :hud_draw, :hud) do |e|
       draw_entity_nocam e
     end
-    .system(:draw, :particle, [:position, :sprite, :life, :lifetime]) do |e|
+    .add_system(:draw, :particle, :life) do |e|
       draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | (e[:colour] ? (e[:colour] & 0x00FFFFFF) : 0x00FFFFFF),
         :draw_mode => :additive})
     end
@@ -170,8 +167,7 @@ class IngameState < EngineState
       :cursor => true,
       :sprite => make_sprite(Gosu::Image.new @window, "ui/cursor.png"),
       :position => {:x => 0, :y => 0},
-      :hud => true
-    })
+    }, :cursor, :hud)
   end
 
   def proc_gen xi, yi, chunk_size
@@ -200,10 +196,6 @@ class IngameState < EngineState
     colour = e[:colour] || 0xFFFFFFFF
     mode = e[:draw_mode] || :default
     img.draw_rot x, y, z, theta, dx, dy, sx, sy, colour, mode
-  end
-
-  def remove e
-    e.merge({:delete => true})
   end
 
   def screen2world x, y
@@ -262,7 +254,6 @@ class IngameState < EngineState
   def gen_player
     {
       :player => {:a => 200},
-      :follow_mouse => {},
       :position => zero,
       :rotation => {:theta => 0},
       :driving_force => zero,
@@ -295,8 +286,8 @@ class IngameState < EngineState
   end
 
   def enter_state
-    @engine.each_entity [:driving_force] do |e|
-      e[:driving_force] = zero
+    @engine.each_entity :force do |e|
+      e[:driving_force] = zero if e.include? :driving_force
     end
     @engine.unpause
   end

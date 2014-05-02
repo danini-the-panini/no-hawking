@@ -34,16 +34,16 @@ class UniverseState < IngameState
     @spr_bullet = Gosu::Image.new @window, "actors/spr_bullet.png"
 
     @engine
-    .input_system(:down, :escape_universe, [:player]) do |id, e|
+    .add_system(:btn_down, :escape_universe, :player) do |e, id|
       if id == Gosu::KbSpace
         return_to_multiverse
-        e.delete(:cam_follow)
-        e.delete(:follow_mouse)
-        e.delete(:player)
+        # e.delete(:cam_follow)
+        # e.delete(:follow_mouse)
+        # e.delete(:player)
       end
     end
-    .system(:update, :hawking_pull, [:player, :position, :hawking, :probe]) do |dt, t, e|
-      @engine.each_entity([:hawking_pickup, :position, :driving_force]) do |h|
+    .add_system(:update, :hawking_pull, :player) do |e, dt, t|
+      @engine.each_entity(:hawking_pickup) do |h|
         dx = e[:position][:x]-h[:position][:x]
         dy = e[:position][:y]-h[:position][:y]
 
@@ -60,34 +60,30 @@ class UniverseState < IngameState
           h[:driving_force][:y] = 0
         end
       end
-      e
     end
-    .system(:update, :hawking_collect, [:player, :hawking, :position]) do |dt, t, e|
-      @engine.each_entity([:hawking_pickup, :position]) do |h|
+    .add_system(:update, :hawking_collect, :player) do |e, dt, t|
+      @engine.each_entity(:hawking_pickup) do |h|
         if dist_sq(h[:position][:x],h[:position][:y],e[:position][:x],e[:position][:y]) < sq(@collect_threshold)
           unless e[:hawking] >= e[:probe][:hawking_cap]
             e[:hawking] += h[:hawking_pickup]
-            h[:delete] = true
+            @engine.remove_entity h, :all
           else
             e[:hawking] = e[:probe][:hawking_cap]
           end
         end
       end
-      e
     end
-    .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
-      unless (pl = @engine.get_entity @player_id).nil?
+    .add_system(:update, :hawking_bar, :hawking_bar) do |e, dt, t|
+      @engine.each_entity :player do |pl|
         e[:scale][:x] = (300.0*pl[:hawking]/pl[:probe][:hawking_cap])/16.0
       end
-      e
     end
-    .system(:update, :health_bar, [:health_bar]) do |dt, t, e|
-      unless (pl = @engine.get_entity @player_id).nil?
+    .add_system(:update, :health_bar, :health_bar) do |e, dt, t|
+      @engine.each_entity :player do |pl|
         e[:scale][:x] = (250.0*pl[:health]/pl[:probe][:health_cap])/16.0
       end
-      e
     end
-    .system(:update, :weapon, [:player, :probe, :weapon]) do |dt, t, e|
+    .add_system(:update, :weapon, :player) do |e, dt, t|
       if @engine.down?(Gosu::MsLeft) && (t-e[:weapon][:last_fire] > 1.0/e[:weapon][:fire_rate])
         e[:weapon][:last_fire] = t
         mx, my = screen2world(@window.mouse_x, @window.mouse_y)
@@ -101,20 +97,19 @@ class UniverseState < IngameState
             :y => e[:weapon][:speed]*Math::sin(rad) + e[:velocity][:y] },
           :bullet => {:damage => e[:weapon][:damage], :owner => e[:id]},
           :life => 4, :lifetime => 4
-        }))
+        }), :bullet, :velocity, :drawable)
       end
-      e
     end
-    .system(:update, :weapon_collision, [:bullet, :position]) do |dt, t, e|
-      @engine.each_entity([:collidable, :position]) do |e2|
+    .add_system(:update, :weapon_collision, :bullet) do |e, dt, t|
+      @engine.each_entity(:collidable) do |e2|
         unless e[:bullet][:owner] == e2[:id]
           if dist_sq(e[:position][:x],e[:position][:y],e2[:position][:x],e2[:position][:y]) < sq(e2[:collidable][:radius])
-            e[:delete] = true
+            @engine.remove_entity e, :all
             # TODO: explosion
             unless e2[:health].nil?
               e2[:health] -= e[:bullet][:damage]
               if e2[:health] < 0
-                e2[:delete] = true
+                @engine.remove_entity e2, :all
                 # TODO: bigger explosion
                 # TODO: award XP / drop Hawking
               end
@@ -122,10 +117,9 @@ class UniverseState < IngameState
           end
         end
       end
-      e
     end
-    .system(:update, :ai_target, [:enemy, :position]) do |dt, t, e|
-      unless (pl = @engine.get_entity @player_id).nil?
+    .add_system(:update, :ai_target, :enemy) do |e, dt, t|
+      @engine.each_entity :player do |pl|
         dist_to_player = dist_sq(e[:position][:x],e[:position][:y],pl[:position][:x],pl[:position][:y])
         if dist_to_player < sq(e[:enemy][:alert_radius])
           e[:enemy][:target] = {:x => pl[:position][:x] + pl[:velocity][:x]*0.016,
@@ -137,9 +131,8 @@ class UniverseState < IngameState
           e[:enemy][:action] = :move
         end
       end
-      e
     end
-    .system(:update, :ai_action, [:enemy, :position]) do |dt, t, e|
+    .add_system(:update, :ai_action, [:enemy, :position]) do |e, dt, t|
       e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
       e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
 
@@ -164,22 +157,19 @@ class UniverseState < IngameState
           :bullet => {:damage => e[:weapon][:damage], :owner => e[:id]},
           :life => 4, :lifetime => 4,
           :colour => 0xFFFF0000
-        }))
+        }), :bullet, :velocity, :drawable)
       end
-      e
     end
-    .system(:update, :probe_life, [:player, :health]) do |dt, t, e|
+    .add_system(:update, :probe_life, :player) do |e, dt, t|
       if e[:health] <= 0.0
         if @lose_your_shit_on_death
           e[:hawking] = 0
         end
         return_to_multiverse # TODO: animate explosion or something first
-        remove e
-      else
-        e
+        @engine.remove_entity e, :all
       end
     end
-    .system(:update, :shield_follow, [:component, :position]) do |dt, t, e|
+    .add_system(:update, :shield_follow, :component) do |e, dt, t|
       unless (pl = @engine.get_entity @player_id).nil?
         e[:position][:x] = pl[:position][:x]+pl[:velocity][:x]*dt
         e[:position][:y] = pl[:position][:y]+pl[:velocity][:y]*dt
@@ -190,37 +180,31 @@ class UniverseState < IngameState
     if universe.nil? || universe.empty?
       @engine
       .add_entity({
-        :hud => true,
         :position => {:x => @window.width/2, :y => 10},
         :sprite => make_sprite((@spr_bar_bg),{:x => 0.5, :y => 0.0}),
         :scale => {:x => 300.0/16.0, :y => 1.0}
-      })
+      }, :hud)
       .add_entity({
-        :hud => true,
         :hawking_bar => true,
         :position => {:x => @window.width/2, :y => 10},
         :sprite => make_sprite((@spr_bar_hawking),{:x => 0.5, :y => 0.0}),
         :scale => {:x => 0.0, :y => 1.0}
-      })
+      }, :hud, :hawking_bar)
       .add_entity({
-        :hud => true,
         :position => {:x => @window.width/2, :y => 30},
         :sprite => make_sprite((@spr_bar_bg),{:x => 0.5, :y => 0.0}),
         :scale => {:x => 250.0/16.0, :y => 1.0}
-      })
+      }, :hud)
       .add_entity({
-        :hud => true,
         :health_bar => true,
         :position => {:x => @window.width/2, :y => 30},
         :sprite => make_sprite((@spr_bar_hp),{:x => 0.5, :y => 0.0}),
         :scale => {:x => 0.0, :y => 1.0}
-      })
+      }, :hud, :health_bar)
       .add_entity({
         :position => zero,
         :sprite => make_sprite(@spr_shield),
-        :component => true,
-        :norotate => true
-      })
+      }, :component, :drawable)
     else
       @engine.inject_state(universe)
       universe.each do |k,c|
@@ -238,9 +222,9 @@ class UniverseState < IngameState
           :health_cap => 1.0, :armour_mult => 1.0, :speed_mult => 1.0},
         :weapon => {:fire_rate => @player_fire_rate, :last_fire => 0,
           :damage => @player_damage, :speed => @player_bullet_speed}
-      }))
+      }), :player, :collidable, :force, :acceleration, :velocity, :friciton, :cam_follow,
+        :follow_mouse, :drawable)
 
-    @engine.each_entity([:player]) { |e| @player_id = e[:id] }
     
   end
 
@@ -268,7 +252,7 @@ class UniverseState < IngameState
       cy = Gosu::random(y1,y2)
       10.times do
         @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy),
-          [xi,yi])
+          :hawking_pickup, :driving_force, :force, :acceleration, :velocity, :drawable)
       end
     end
 
@@ -286,7 +270,7 @@ class UniverseState < IngameState
         @engine.add_entity(
           gen_asteroid(x, y).merge({
             :velocity => {:x => Math::cos(theta)*speed, :y => Math::sin(theta)*speed}
-          }), [xi,yi])
+          }), :collidable, :force, :acceleration, :velocity, :drawable)
       end
     end
 
@@ -304,7 +288,7 @@ class UniverseState < IngameState
         :health => 0.5,
         :weapon => {:fire_rate => @enemy_fire_rate, :last_fire => 0,
           :damage => @enemy_damage, :speed => @enemy_bullet_speed}
-      }.merge(motion_components))
+      }.merge(motion_components), :enemy, :collidable, :force, :acceleration, :velocity, :drawable)
     end
   end
 
@@ -344,7 +328,7 @@ class UniverseState < IngameState
   end
 
   def get_hawking
-    @engine.each_entity([:player, :hawking]) do |pl|
+    @engine.each_entity(:player) do |pl|
       return pl[:hawking]
     end
   end

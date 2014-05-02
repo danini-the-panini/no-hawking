@@ -30,6 +30,7 @@ module Tentative
 
     def remove_system type, name
       @systems[type].delete name
+      self
     end
 
     def add_entity entity, *nodes
@@ -43,6 +44,7 @@ module Tentative
           @nodes[node][id] = entity
         end
       end
+      self
     end
 
     def remove_entity entity, *nodes
@@ -59,30 +61,35 @@ module Tentative
           end
         end
       end
+      self
     end
 
     def each_entity node
-      @node[node].each do |id, e|
+      @nodes[node].each do |id, e|
         yield e
       end
     end
 
     def button_down id
-      @systems[:btn_down].each do |node, block|
-        @nodes[node].each do |i, e|
-          block.call(e, id)
+      @systems[:btn_down].each do |name, sys|
+        @nodes[sys.first].each do |i, e|
+          sys.last.call(e, id)
         end
       end
       @input_state[id] = true
     end
 
     def button_up id
-      @systems[:btn_up].each do |node, block|
-        @nodes[node].each do |i, e|
-          block.call(e, id)
+      @systems[:btn_up].each do |name, sys|
+        @nodes[sys.first].each do |i, e|
+          sys.last.call(e, id)
         end
       end
       @input_state[id] = false
+    end
+
+    def down? id
+      @input_state[id]
     end
 
     def update
@@ -93,9 +100,9 @@ module Tentative
 
       @updating = true
 
-      @systems[:update].each do |node, block|
-        @nodes[node].each do |i, e|
-          block.call(e, dt, t)
+      @systems[:update].each do |name, sys|
+        @nodes[sys.first].each do |i, e|
+          sys.last.call(e, dt, @time)
         end
       end
 
@@ -114,11 +121,20 @@ module Tentative
     end
 
     def draw
-      @systems[:draw].each do |node, block|
-        @nodes[node].each do |i, e|
-          block.call(e)
+      @systems[:draw].each do |name, sys|
+        @nodes[sys.first].each do |i, e|
+          sys.last.call(e)
         end
       end
+    end
+
+    def pause
+      @input_state.clear
+    end
+
+    def unpause
+      @input_state.clear
+      @last_time = Gosu::milliseconds
     end
 
     private

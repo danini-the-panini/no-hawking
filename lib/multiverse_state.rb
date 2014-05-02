@@ -17,90 +17,83 @@ class MultiverseState < IngameState
     @last_entered_hole = nil
 
     @engine
-    .input_system(:down, :enter_universe, [:white_hole, :position]) do |id, e|
+    .add_system(:btn_down, :enter_universe, :white_hole) do |e, id|
       if id == Gosu::MsLeft && !@end_game
-        pl = @engine.get_entity @player_id
-        if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
-          @last_entered_hole = e
-          e[:universe] = {} if e[:universe].nil?
-          pl[:probes] -= 1
-          enter_universe e[:universe]
+        @engine.each_entity(:player) do |pl|
+          if dist_sq(pl[:position][:x],pl[:position][:y],e[:position][:x],e[:position][:y]) <= sq(e[:white_hole][:activate_radius])
+            @last_entered_hole = e
+            e[:universe] = {} if e[:universe].nil?
+            pl[:probes] -= 1
+            enter_universe e[:universe]
+          end
         end
       end
     end
-    .system(:update, :pulse_hole, [:white_hole, :emitter, :pulsate]) do |dt, t, e|
+    .add_system(:update, :pulse_hole, :white_hole) do |e, dt, t|
       if t % e[:pulsate][:period] < @window.update_interval
         pulse_factor = Gosu::random(e[:pulsate][:min],e[:pulsate][:max])
         scale = e[:pulsate][:base_size]*pulse_factor
         e[:emitter][:velocity] = e[:pulsate][:base_velocity]*scale
         e[:scale][:x] = e[:scale][:y] = scale
       end
-      e
     end
-    .system(:update, :hawking_bar, [:hawking_bar]) do |dt, t, e|
-      pl = @engine.get_entity @player_id
-      e[:scale][:x] = (300.0*pl[:hawking]/@hawking_requirement)/16.0
-      e
-    end
-    .system(:update, :probe_icons, [:probe_icon]) do |dt, t, e|
-      pl = @engine.get_entity @player_id
-      if e[:probe_icon] >= pl[:probes]
-        e[:colour] = 0x33FFFFFF
+    .add_system(:update, :hawking_bar, :hawking_bar) do |e, dt, t|
+      @engine.each_entity(:player) do |pl|
+        e[:scale][:x] = (300.0*pl[:hawking]/@hawking_requirement)/16.0
       end
-      e
     end
-    .system(:update, :game_loop, [:player, :hawking, :probes]) do |dt, t, e|
+    .add_system(:update, :probe_icons, :probe_icon) do |e, dt, t|
+      @engine.each_entity(:player) do |pl|
+        if e[:probe_icon] >= pl[:probes]
+          e[:colour] = 0x33FFFFFF
+        end
+      end
+    end
+    .add_system(:update, :game_loop, :player) do |e, dt, t|
       if e[:hawking] - @hawking_requirement > -0.05
         e[:hawking] = @hawking_requirement
         @engine.add_entity({
-          :hud => true,
           :sprite => make_sprite(Gosu::Image.from_text(@window, "You are saved", Gosu::default_font_name, 50)),
           :position => {x: @window.width/2, :y => @window.height/2}
-        })
+        }, :hud)
         @end_game ||= t
       elsif e[:probes] <= 0
         @engine.add_entity({
-          :hud => true,
           :sprite => make_sprite(Gosu::Image.from_text(@window, "You are lost", Gosu::default_font_name, 50)),
           :position => {x: @window.width/2, :y => @window.height/2}
-        })
+        }, :hud)
         @end_game ||= t
       end
       if @end_game && t-@end_game > 5.0
         @window.change_state(:start)
       end
-      e
     end
     .add_entity(gen_player.merge({
       :sprite => make_sprite(@spr_player),
       :hawking => 0.0,
       :probes => @starting_probes
-    }))
+    }), :player, :force, :acceleration, :velocity, :friction, :cam_follow, :follow_mouse, :drawable)
     .add_entity({
-      :hud => true,
       :position => {:x => @window.width/2, :y => 10},
       :sprite => make_sprite((@spr_bar_bg),{:x => 0.5, :y => 0.0}),
       :scale => {:x => 300.0/16.0, :y => 1.0}
-    })
+    }, :hud)
     .add_entity({
-      :hud => true,
       :hawking_bar => true,
       :position => {:x => @window.width/2, :y => 10},
       :sprite => make_sprite((@spr_bar_hawking),{:x => 0.5, :y => 0.0}),
       :scale => {:x => 0.0, :y => 1.0}
-    })
+    }, :hud)
 
     @starting_probes.times do |i|
       @engine.add_entity({
-        :hud => true,
         :probe_icon => i,
         :position => {:x => @window.width/2-@spr_probe.width*(@starting_probes/2.0)+i*@spr_probe.width, :y => @window.height-10},
         :sprite => make_sprite((@spr_probe),{:x => 0.0, :y => 1.0}),
         :rotation => {:theta => -90}
-      })
+      }, :hud)
     end
 
-    @engine.each_entity([:player]) { |e| @player_id = e[:id] }
   end
 
   def gen_white_hole x, y
@@ -126,7 +119,7 @@ class MultiverseState < IngameState
     3.times do
       @engine
       .add_entity(gen_white_hole(Gosu::random(x1,x2),
-        Gosu::random(y1,y2)),[xi,yi])
+        Gosu::random(y1,y2)),:white_hole)
     end
   end
 
@@ -142,11 +135,11 @@ class MultiverseState < IngameState
     @music.play true
 
     unless @last_visited_universe.nil?
-      @engine.each_entity([:player, :hawking]) do |pl|
+      @engine.each_entity([:player]) do |pl|
         pl[:hawking] += @last_visited_universe.get_hawking
       end
       # @last_entered_hole[:universe] = @last_visited_universe.get_chunks
-      @last_entered_hole[:delete] = true
+      @engine.remove_entity(@last_entered_hole, :white_hole)
       @last_visited_universe = nil
     end
   end

@@ -1,11 +1,11 @@
-require_relative 'gosu-ecs'
+require_relative 'tentative_engine'
 require_relative 'window_state'
 
 class EngineState < WindowState
   def initialize window
     super
     
-    @engine = ECS::Engine.new
+    @engine = Tentative::Engine.new
   end
 
   def button_up id

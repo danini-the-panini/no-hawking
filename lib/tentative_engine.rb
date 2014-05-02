@@ -154,29 +154,15 @@ module Tentative
     end
 
     def button_down id
-      @chunks.each do |chunk_name, chunk|
-        @systems[:btn_down].each do |name, sys|
-          node = chunk[:nodes][sys.first]
-          unless node.nil?
-            node.each do |i, e|
-              sys.last.call(e, id)
-            end
-          end
-        end
+      exec_systems :btn_down do |sys,e|
+        sys.call(e, id)
       end
       @input_state[id] = true
     end
 
     def button_up id
-      @chunks.each do |chunk_name, chunk|
-        @systems[:btn_up].each do |name, sys|
-          node = chunk[:nodes][sys.first]
-          unless node.nil?
-            node.each do |i, e|
-              sys.last.call(e, id)
-            end
-          end
-        end
+      exec_systems :btn_up do |sys,e|
+        sys.call(e, id)
       end
       @input_state[id] = false
     end
@@ -193,15 +179,8 @@ module Tentative
 
       @updating = true
 
-      @chunks.each do |chunk_name, chunk|
-        @systems[:update].each do |name, sys|
-          node = chunk[:nodes][sys.first]
-          unless node.nil?
-            node.each do |i, e|
-              sys.last.call(e, dt, @time)
-            end
-          end
-        end
+      exec_systems :update do |sys,e|
+        sys.call(e, dt, @time)
       end
 
       @updating = false
@@ -234,15 +213,8 @@ module Tentative
     end
 
     def draw
-      @chunks.each do |chunk_name, chunk|
-        @systems[:draw].each do |name, sys|
-          node = chunk[:nodes][sys.first]
-          unless node.nil?
-            node.each do |i, e|
-              sys.last.call(e)
-            end
-          end
-        end
+      exec_systems :draw do |sys,e|
+        sys.call(e)
       end
     end
 
@@ -272,6 +244,19 @@ module Tentative
       def get_chunk chunk_name
         chunk = @chunks[chunk_name] || (@inactive_chunks[chunk_name] ||= gen_chunk)
         chunk
+      end
+
+      def exec_systems sys_name
+        @chunks.each do |chunk_name, chunk|
+          @systems[sys_name].each do |name, sys|
+            node = chunk[:nodes][sys.first]
+            unless node.nil?
+              node.each do |i, e|
+                yield sys.last, e
+              end
+            end
+          end
+        end
       end
 
   end

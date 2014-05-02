@@ -76,18 +76,16 @@ class IngameState < EngineState
       e[:velocity][:x] += e[:acceleration][:x]*dt
       e[:velocity][:y] += e[:acceleration][:y]*dt
     end
-    .add_system(:update, :movement, :velocity) do |e, dt, t, c|
+    .add_system(:update, :movement, :velocity) do |e, dt, t|
       e[:position][:x] += e[:velocity][:x]*dt
       e[:position][:y] += e[:velocity][:y]*dt
 
       xi = e[:position][:x].to_i / @chunk_size
       yi = e[:position][:y].to_i / @chunk_size
 
-      # if c != :default && (c[0] != xi || c[1] != yi)
-      #   e.merge({:chunk => [xi,yi]})
-      # else
-      #   e
-      # end
+      if e[:chunk] != :default && (e[:chunk][0] != xi || e[:chunk][1] != yi)
+        @engine.move_entity(e, [xi,yi])
+      end
     end
     .add_system(:update, :cam_follow, :cam_follow) do |e, dt, t|
       @camera[:x] += ((e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x])-@camera[:x])*e[:cam_follow][:smoothing]
@@ -135,12 +133,12 @@ class IngameState < EngineState
       y2 = y2.to_i / @chunk_size
 
       @visited_chunks.each do |k,v|
-        # @engine.activate_chunk(k,false)
+        @engine.deactivate_chunk(k)
       end
 
       (x1..x2).each do |xi|
         (y1..y2).each do |yi|
-          # @engine.activate_chunk([xi,yi])
+          @engine.activate_chunk([xi,yi])
           if @visited_chunks[[xi,yi]].nil?
             proc_gen(xi, yi, @chunk_size)
             @visited_chunks[[xi,yi]] = true

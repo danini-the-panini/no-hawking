@@ -13,17 +13,24 @@ module Tentative
       @systems = {:update => {}, :draw => {}, :once => {},
         :btn_up => {}, :btn_down => {}}
 
-      @nodes = {}
-      @next_id = 0
+      @chunks = {
+        :default => gen_chunk
+      }
+      @inactive_chunks = {}
+
+      @chunks_to_remove = []
+      @chunks_to_change = []
 
       @entities_to_add = []
       @entities_to_remove = []
+      @entities_to_move = []
+
+      @next_id = 0
 
       @input_state = {}
     end
 
     def add_system type, name, node, &block
-      @nodes[node] ||= {}
       @systems[type][name] = [node, block]
       self
     end
@@ -33,62 +40,142 @@ module Tentative
       self
     end
 
-    def add_entity entity, *nodes
+    def add_entity_to_chunk entity, chunk_name, *nodes
       if @updating
-        @entities_to_add << [entity, nodes]
+        @entities_to_add << [entity, chunk_name, nodes]
       else
+        chunk = get_chunk chunk_name
+
         id = gen_id
+
         entity[:id] = id
+        entity[:chunk] = chunk_name
+
         nodes.each do |node|
-          @nodes[node] ||= {}
-          @nodes[node][id] = entity
+          chunk[:nodes][node] ||= {}
+          chunk[:nodes][node][id] = entity
         end
       end
       self
     end
 
+    def add_entity entity, *nodes
+      add_entity_to_chunk entity, :default, *nodes
+    end
+
     def remove_entity entity, *nodes
-      if @updating
+      if @updaing
         @entities_to_remove << [entity, nodes]
       else
+        chunk = get_chunk entity[:chunk]
+
         if nodes.include? :all
-          @nodes.each do |node,list|
+          chunk[:nodes].each do |node,list|
             list.delete entity[:id]
           end
+          entity[:chunk] = nil
+          entity[:id] = nil
         else
           nodes.each do |node|
-            @nodes[node].delete entity[:id]
+            chunk[:nodes][node].delete entity[:id]
           end
+        end
+      end
+      self
+    end
+
+    def move_entity entity, chunk_name
+      if @updating
+        @entities_to_move << [entity, chunk_name]
+      else
+        from_chunk = get_chunk entity[:chunk]
+        to_chunk = get_chunk chunk_name
+
+        entity[:chunk] = chunk_name
+        id = entity[:id]
+
+        from_chunk[:nodes].select do |node, list|
+          list.delete id
+        end.each do |node|
+          to_chunk[:nodes][node][id] = entity
         end
       end
       self
     end
 
     def each_entity node
-      if @nodes[node]
-        @nodes[node].each do |id, e|
-          yield e
+      @chunks.each do |chunk_name, chunk|
+        if chunk[:nodes][node]
+          chunk[:nodes][node].each do |id, e|
+            yield e
+          end
         end
       end
     end
 
-    def nodes
-      @nodes
+    def chunk
+      @chunks.merge @inactive_chunks
+    end
+
+    def add_chunk chunk_name
+      @inactive_chunks[chunk_name] ||= gen_chunk
+      self
+    end
+
+    def remove_chunk chunk_name
+      if @chunks.include? chunk_name
+        if @updating
+          @chunks_to_remove << chunk_name
+        else
+          @chunks.delete chunk_name
+        end
+      else
+        @inactive_chunks.delete chunk_name
+      end
+      self
+    end
+
+    def activate_chunk chunk_name, value=true
+      if (value ? @inactive_chunks : @chunks).include? chunk_name
+        if @updating
+          @chunks_to_change << [chunk_name, value]
+        else
+          if value
+            @chunks[chunk_name] = @inactive_chunks.delete(chunk_name)
+          else
+            @inactive_chunks[chunk_name] = @chunks.delete(chunk_name)
+          end
+        end
+      end
+    end
+
+    def deactivate_chunk chunk
+      activate_chunk chunk, false
     end
 
     def button_down id
-      @systems[:btn_down].each do |name, sys|
-        @nodes[sys.first].each do |i, e|
-          sys.last.call(e, id)
+      @chunks.each do |chunk_name, chunk|
+        @systems[:btn_down].each do |name, sys|
+          node = chunk[:nodes][sys.first]
+          unless node.nil?
+            node.each do |i, e|
+              sys.last.call(e, id)
+            end
+          end
         end
       end
       @input_state[id] = true
     end
 
     def button_up id
-      @systems[:btn_up].each do |name, sys|
-        @nodes[sys.first].each do |i, e|
-          sys.last.call(e, id)
+      @chunks.each do |chunk_name, chunk|
+        @systems[:btn_up].each do |name, sys|
+          node = chunk[:nodes][sys.first]
+          unless node.nil?
+            node.each do |i, e|
+              sys.last.call(e, id)
+            end
+          end
         end
       end
       @input_state[id] = false
@@ -106,16 +193,21 @@ module Tentative
 
       @updating = true
 
-      @systems[:update].each do |name, sys|
-        @nodes[sys.first].each do |i, e|
-          sys.last.call(e, dt, @time)
+      @chunks.each do |chunk_name, chunk|
+        @systems[:update].each do |name, sys|
+          node = chunk[:nodes][sys.first]
+          unless node.nil?
+            node.each do |i, e|
+              sys.last.call(e, dt, @time)
+            end
+          end
         end
       end
 
       @updating = false
 
-      @entities_to_add.each do |entity,nodes|
-        add_entity entity, *nodes
+      @entities_to_add.each do |entity,chunk,nodes|
+        add_entity entity, chunk, *nodes
       end
       @entities_to_add.clear
 
@@ -124,12 +216,32 @@ module Tentative
       end
       @entities_to_remove.clear
 
+      @entities_to_move.each do |entity,chunk|
+        move_entity entity, chunk
+      end
+      @entities_to_move.clear
+
+      @chunks_to_remove.each do |chunk_name|
+        @chunks.delete(chunk_name) || @inactive_chunks.delete(chunk_name)
+      end
+      @chunks_to_remove.clear
+
+      @chunks_to_change.each do |chunk_name,value|
+        activate_chunk chunk_name, value
+      end
+      @chunks_to_change.clear
+
     end
 
     def draw
-      @systems[:draw].each do |name, sys|
-        @nodes[sys.first].each do |i, e|
-          sys.last.call(e)
+      @chunks.each do |chunk_name, chunk|
+        @systems[:draw].each do |name, sys|
+          node = chunk[:nodes][sys.first]
+          unless node.nil?
+            node.each do |i, e|
+              sys.last.call(e)
+            end
+          end
         end
       end
     end
@@ -149,6 +261,17 @@ module Tentative
         id = @next_id
         @next_id += 1
         id
+      end
+
+      def gen_chunk
+        {
+          :nodes => {}
+        }
+      end
+
+      def get_chunk chunk_name
+        chunk = @chunks[chunk_name] || (@inactive_chunks[chunk_name] ||= gen_chunk)
+        chunk
       end
 
   end

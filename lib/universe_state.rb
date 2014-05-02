@@ -229,29 +229,31 @@ class UniverseState < IngameState
   end
 
   def proc_gen xi, yi, chunk_size
-
     x1 = xi*chunk_size
     y1 = yi*chunk_size
     x2 = x1+chunk_size
     y2 = y1+chunk_size
 
+    chunk_name = [xi,yi]
+
     # @engine
-    # .add_entity({
+    # .add_entity_to_chunk({
     #   :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
     #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
-    #   :norotate => true
-    # },[xi,yi])
-    # .add_entity({
+    # }, chunk_name, :drawable)
+    # .add_entity_to_chunk({
     #   :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
     #   :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
     #   :rotation => {:theta => Gosu::random(0,360)}
-    # },[xi,yi])
+    # }, [xi,yi], :drawable)
 
     3.times do
       cx = Gosu::random(x1,x2)
       cy = Gosu::random(y1,y2)
       10.times do
-        @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy),
+        @engine.add_entity_to_chunk(
+          gen_hawking_pickup(
+            Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy), chunk_name,
           :hawking_pickup, :driving_force, :force, :acceleration, :velocity, :friction, :drawable)
       end
     end
@@ -267,10 +269,10 @@ class UniverseState < IngameState
         theta = Gosu::random(0,Math::PI*2)
         speed = Gosu::random(10,20)
 
-        @engine.add_entity(
+        @engine.add_entity_to_chunk(
           gen_asteroid(x, y).merge({
             :velocity => {:x => Math::cos(theta)*speed, :y => Math::sin(theta)*speed}
-          }), :collidable, :force, :acceleration, :velocity, :drawable)
+          }), chunk_name, :collidable, :force, :acceleration, :velocity, :drawable)
       end
     end
 

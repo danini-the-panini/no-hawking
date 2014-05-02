@@ -115,10 +115,13 @@ class MultiverseState < IngameState
     y1 = yi*chunk_size
     x2 = x1+chunk_size
     y2 = y1+chunk_size
+
+    chunk_name = [xi,yi]
+    
     3.times do
       @engine
-      .add_entity(gen_white_hole(Gosu::random(x1,x2),
-        Gosu::random(y1,y2)),:white_hole, :drawable, :emitter)
+      .add_entity_to_chunk(gen_white_hole(Gosu::random(x1,x2),
+        Gosu::random(y1,y2)),chunk_name,:white_hole, :drawable, :emitter)
     end
   end
 

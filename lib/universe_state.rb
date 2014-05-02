@@ -132,7 +132,7 @@ class UniverseState < IngameState
         end
       end
     end
-    .add_system(:update, :ai_action, [:enemy, :position]) do |e, dt, t|
+    .add_system(:update, :ai_action, :enemy) do |e, dt, t|
       e[:velocity][:x] = e[:enemy][:target][:x]-e[:position][:x]
       e[:velocity][:y] = e[:enemy][:target][:y]-e[:position][:y]
 
@@ -170,9 +170,9 @@ class UniverseState < IngameState
       end
     end
     .add_system(:update, :shield_follow, :component) do |e, dt, t|
-      unless (pl = @engine.get_entity @player_id).nil?
-        e[:position][:x] = pl[:position][:x]+pl[:velocity][:x]*dt
-        e[:position][:y] = pl[:position][:y]+pl[:velocity][:y]*dt
+      @engine.each_entity :player do |pl|
+        e[:position][:x] = pl[:position][:x]
+        e[:position][:y] = pl[:position][:y]
       end
       e
     end
@@ -222,7 +222,7 @@ class UniverseState < IngameState
           :health_cap => 1.0, :armour_mult => 1.0, :speed_mult => 1.0},
         :weapon => {:fire_rate => @player_fire_rate, :last_fire => 0,
           :damage => @player_damage, :speed => @player_bullet_speed}
-      }), :player, :collidable, :force, :acceleration, :velocity, :friciton, :cam_follow,
+      }), :player, :collidable, :force, :acceleration, :velocity, :friction, :cam_follow,
         :follow_mouse, :drawable)
 
     
@@ -252,7 +252,7 @@ class UniverseState < IngameState
       cy = Gosu::random(y1,y2)
       10.times do
         @engine.add_entity(gen_hawking_pickup(Gosu::random(-50,50)+cx, Gosu::random(-50,50)+cy),
-          :hawking_pickup, :driving_force, :force, :acceleration, :velocity, :drawable)
+          :hawking_pickup, :driving_force, :force, :acceleration, :velocity, :friction, :drawable)
       end
     end
 
@@ -288,7 +288,7 @@ class UniverseState < IngameState
         :health => 0.5,
         :weapon => {:fire_rate => @enemy_fire_rate, :last_fire => 0,
           :damage => @enemy_damage, :speed => @enemy_bullet_speed}
-      }.merge(motion_components), :enemy, :collidable, :force, :acceleration, :velocity, :drawable)
+      }.merge(motion_components), :enemy, :collidable, :acceleration, :velocity, :drawable)
     end
   end
 
@@ -299,7 +299,6 @@ class UniverseState < IngameState
       :position => {:x => x, :y => y},
       :sprite => make_sprite(@spr_particle),
       :scale => {x: scale, y: scale},
-      :norotate => true,
       :hawking_pickup => scale*0.01,
       :mass => scale*0.01,
       :driving_force => zero,
@@ -315,7 +314,6 @@ class UniverseState < IngameState
       :position => {:x => x, :y => y},
       :sprite => make_sprite(@spr_luna512),
       :scale => {:x => scale, :y => scale},
-      :norotate => true,
       :mass => scale*10,
       :driving_force => zero,
       :collidable => {:radius => (@spr_luna512.width/2.0)*scale},

@@ -40,7 +40,7 @@ module Tentative
         id = gen_id
         entity[:id] = id
         nodes.each do |node|
-          # tentatively assume user has created system to handle node
+          @nodes[node] ||= {}
           @nodes[node][id] = entity
         end
       end
@@ -65,8 +65,10 @@ module Tentative
     end
 
     def each_entity node
-      @nodes[node].each do |id, e|
-        yield e
+      if @nodes[node]
+        @nodes[node].each do |id, e|
+          yield e
+        end
       end
     end
 

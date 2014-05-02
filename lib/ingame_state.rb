@@ -103,13 +103,18 @@ class IngameState < EngineState
             :y => e[:emitter][:velocity]*Math::sin(theta)},
           :life => e[:emitter][:lifetime],
           :lifetime => e[:emitter][:lifetime],
-          :sprite => e[:emitter][:sprite]
+          :sprite => e[:emitter][:sprite],
+          :draw_mode => :additive
         }, :life, :velocity, :drawable)
       end
     end
     .add_system(:update, :life, :life) do |e, dt, t|
       e[:life] -= dt
-      @engine.remove_entity e, :all if e[:life] < 0
+      if e[:life] > 0
+        e[:colour] = (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | (e[:colour] ? (e[:colour] & 0x00FFFFFF) : 0x00FFFFFF)
+      else
+        @engine.remove_entity e, :all
+      end
     end
     .add_system(:update, :follow_mouse, :follow_mouse) do |e, dt, t|
       mx, my = screen2world(@window.mouse_x, @window.mouse_y)
@@ -144,14 +149,10 @@ class IngameState < EngineState
       end
     end
     .add_system(:draw, :sprite_draw, :drawable) do |e|
-      draw_entity e unless e[:life] || e[:hud]
+      draw_entity e
     end
     .add_system(:draw, :hud_draw, :hud) do |e|
       draw_entity_nocam e
-    end
-    .add_system(:draw, :particle, :life) do |e|
-      draw_entity e.merge({:colour => (((e[:life]/e[:lifetime])*0xFF).to_i << 24) | (e[:colour] ? (e[:colour] & 0x00FFFFFF) : 0x00FFFFFF),
-        :draw_mode => :additive})
     end
     .add_entity({
       :cursor => true,

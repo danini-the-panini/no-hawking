@@ -102,7 +102,6 @@ class MultiverseState < IngameState
       :pulsate => {:min => Gosu::random(0.7,0.9), :max => Gosu::random(1.1,1.3), :period => 0.2,
         :base_size => Gosu::random(0.6,1.4), :base_velocity => 20},
       :position => {:x => x, :y => y},
-      :norotate => true,
       :scale => {:x => 1, :y => 1},
       :sprite => make_sprite(@white_hole_img),
       :emitter => gen_emitter,

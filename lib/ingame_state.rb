@@ -138,10 +138,12 @@ class IngameState < EngineState
 
       (x1..x2).each do |xi|
         (y1..y2).each do |yi|
-          @engine.activate_chunk([xi,yi])
           if @visited_chunks[[xi,yi]].nil?
+            @engine.add_chunk([xi,yi])
             proc_gen(xi, yi, @chunk_size)
             @visited_chunks[[xi,yi]] = true
+          else
+            @engine.activate_chunk([xi,yi])
           end
         end
       end
@@ -288,7 +290,7 @@ class IngameState < EngineState
   def update
     super
 
-    @window.caption = "#{Gosu::fps.to_s}, #{@visited_chunks.size}"
+    @window.caption = "fps: #{Gosu::fps.to_s}, c: #{@engine.total_chunks}, ac: #{@engine.active_chunks}, e: #{@engine.total_entities}, ae: #{@engine.active_entities}"
   end
 
 end

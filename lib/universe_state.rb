@@ -108,11 +108,6 @@ class UniverseState < IngameState
             # TODO: explosion
             unless e2[:health].nil?
               e2[:health] -= e[:bullet][:damage]
-              if e2[:health] < 0
-                @engine.remove_entity e2, :all
-                # TODO: bigger explosion
-                # TODO: award XP / drop Hawking
-              end
             end
           end
         end
@@ -160,8 +155,15 @@ class UniverseState < IngameState
         }), :bullet, :velocity, :drawable)
       end
     end
+    .add_system(:update, :enemy_life, :enemy) do |e, dt, t|
+      if e[:health] < 0
+        @engine.remove_entity e, :all
+        # TODO: bigger explosion
+        # TODO: award XP / drop Hawking ?
+      end
+    end
     .add_system(:update, :probe_life, :player) do |e, dt, t|
-      if e[:health] <= 0.0
+      unless e[:health] > 0
         if @lose_your_shit_on_death
           e[:hawking] = 0
         end

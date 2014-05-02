@@ -113,8 +113,32 @@ module Tentative
       end
     end
 
-    def chunk
+    def total_entities
+      all_chunks.values.reduce(0) do |x,chunk|
+        x + chunk[:nodes].values.reduce(0) do |y,node|
+          y + node.length
+        end
+      end
+    end
+
+    def active_entities
+      @chunks.values.reduce(0) do |x,chunk|
+        x + chunk[:nodes].values.reduce(0) do |y,node|
+          y + node.length
+        end
+      end
+    end
+
+    def all_chunks
       @chunks.merge @inactive_chunks
+    end
+
+    def total_chunks
+      @chunks.size + @inactive_chunks.size
+    end
+
+    def active_chunks
+      @chunks.size
     end
 
     def add_chunk chunk_name

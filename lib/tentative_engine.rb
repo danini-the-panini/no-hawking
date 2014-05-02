@@ -52,8 +52,8 @@ module Tentative
         @entities_to_remove << [entity, nodes]
       else
         if nodes.include? :all
-          @nodes.each do |node|
-            node.delete entity[:id]
+          @nodes.each do |node,list|
+            list.delete entity[:id]
           end
         else
           nodes.each do |node|

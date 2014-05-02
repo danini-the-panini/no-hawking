@@ -34,7 +34,6 @@ class IngameState < EngineState
       if @engine.down? Gosu::KbS
         e[:driving_force][:y] += e[:player][:a]
       end
-      e
     end
     .add_system(:update, :collision, :collidable) do |e, dt, t|
       @engine.each_entity(:collidable) do |e2|
@@ -63,23 +62,19 @@ class IngameState < EngineState
           end
         end
       end
-      e
     end
     .add_system(:update, :friction, :friction) do |e, dt, t|
       e[:friction][:x] = -e[:friction][:c]*e[:velocity][:x]
       e[:friction][:y] = -e[:friction][:c]*e[:velocity][:y]
-      e
     end
     .add_system(:update, :force, :force) do |e, dt, t|
       force = total_force(e)
       e[:acceleration][:x] = force[:x]/e[:mass]
       e[:acceleration][:y] = force[:y]/e[:mass]
-      e
     end
     .add_system(:update, :acceleration, :acceleration) do |e, dt, t|
       e[:velocity][:x] += e[:acceleration][:x]*dt
       e[:velocity][:y] += e[:acceleration][:y]*dt
-      e
     end
     .add_system(:update, :movement, :velocity) do |e, dt, t, c|
       e[:position][:x] += e[:velocity][:x]*dt
@@ -97,9 +92,8 @@ class IngameState < EngineState
     .add_system(:update, :cam_follow, :cam_follow) do |e, dt, t|
       @camera[:x] += ((e[:position][:x] + e[:cam_follow][:factor]*e[:velocity][:x])-@camera[:x])*e[:cam_follow][:smoothing]
       @camera[:y] += ((e[:position][:y] + e[:cam_follow][:factor]*e[:velocity][:y])-@camera[:y])*e[:cam_follow][:smoothing]
-      e
     end
-    .add_system(:update, :emitter, [:emitter, :position]) do |e, dt, t|
+    .add_system(:update, :emitter, :emitter) do |e, dt, t|
       if t-e[:emitter][:last_emit] > e[:emitter][:period]
         theta = Gosu::random(0,360)
 
@@ -110,24 +104,21 @@ class IngameState < EngineState
           :life => e[:emitter][:lifetime],
           :lifetime => e[:emitter][:lifetime],
           :sprite => e[:emitter][:sprite]
-        })
+        }, :life, :velocity, :drawable)
       end
-      e
     end
     .add_system(:update, :life, :life) do |e, dt, t|
       e[:life] -= dt
-      @engine.remove e, :all if e[:life] < 0
+      @engine.remove_entity e, :all if e[:life] < 0
     end
     .add_system(:update, :follow_mouse, :follow_mouse) do |e, dt, t|
       mx, my = screen2world(@window.mouse_x, @window.mouse_y)
       rad = Math::atan2(my-e[:position][:y], mx-e[:position][:x])
       e[:rotation][:theta] = (rad*180.0)/Math::PI
-      e
     end
     .add_system(:update, :cursor, :cursor) do |e, dt, t|
       e[:position][:x] = @window.mouse_x
       e[:position][:y] = @window.mouse_y
-      e
     end
     .add_system(:update, :proc_gen, :player) do |e, dt, t|
       x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
@@ -151,7 +142,6 @@ class IngameState < EngineState
           end
         end
       end
-      e
     end
     .add_system(:draw, :sprite_draw, :drawable) do |e|
       draw_entity e unless e[:life] || e[:hud]

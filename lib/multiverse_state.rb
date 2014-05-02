@@ -119,7 +119,7 @@ class MultiverseState < IngameState
     3.times do
       @engine
       .add_entity(gen_white_hole(Gosu::random(x1,x2),
-        Gosu::random(y1,y2)),:white_hole)
+        Gosu::random(y1,y2)),:white_hole, :drawable, :emitter)
     end
   end
 

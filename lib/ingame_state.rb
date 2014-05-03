@@ -95,7 +95,7 @@ class IngameState < EngineState
       if t-e[:emitter][:last_emit] > e[:emitter][:period]
         theta = Gosu::random(0,360)
 
-        @engine.add_entity({
+        @engine.add_entity_to_chunk({
           :position => e[:position].dup,
           :velocity => {:x => e[:emitter][:velocity]*Math::cos(theta),
             :y => e[:emitter][:velocity]*Math::sin(theta)},
@@ -103,7 +103,7 @@ class IngameState < EngineState
           :lifetime => e[:emitter][:lifetime],
           :sprite => e[:emitter][:sprite],
           :draw_mode => :additive
-        }, :life, :velocity, :drawable)
+        }, e[:chunk], :life, :velocity, :drawable)
       end
     end
     .add_system(:update, :life, :life) do |e, dt, t|
@@ -133,7 +133,7 @@ class IngameState < EngineState
       y2 = y2.to_i / @chunk_size
 
       @visited_chunks.each do |k,v|
-        @engine.deactivate_chunk(k)
+        v[:active] = false
       end
 
       (x1..x2).each do |xi|
@@ -141,11 +141,15 @@ class IngameState < EngineState
           if @visited_chunks[[xi,yi]].nil?
             @engine.add_chunk([xi,yi])
             proc_gen(xi, yi, @chunk_size)
-            @visited_chunks[[xi,yi]] = true
+            @visited_chunks[[xi,yi]] = {:active => true}
           else
-            @engine.activate_chunk([xi,yi])
+            @visited_chunks[[xi,yi]][:active] = true
           end
         end
+      end
+
+      @visited_chunks.each do |k,v|
+        @engine.activate_chunk k, v[:active]
       end
     end
     .add_system(:draw, :sprite_draw, :drawable) do |e|

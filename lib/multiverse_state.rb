@@ -117,7 +117,13 @@ class MultiverseState < IngameState
     y2 = y1+chunk_size
 
     chunk_name = [xi,yi]
-    
+
+    @engine
+    .add_entity_to_chunk({
+      :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
+      :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
+    }, chunk_name, :drawable)
+
     3.times do
       @engine
       .add_entity_to_chunk(gen_white_hole(Gosu::random(x1,x2),

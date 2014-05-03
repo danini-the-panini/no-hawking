@@ -97,7 +97,7 @@ module Tentative
         from_chunk[:nodes].select do |node, list|
           list.delete id
         end.each do |node|
-          to_chunk[:nodes][node][id] = entity
+          (to_chunk[:nodes][node] ||= {})[id] = entity
         end
       end
       self
@@ -210,7 +210,7 @@ module Tentative
       @updating = false
 
       @entities_to_add.each do |entity,chunk,nodes|
-        add_entity entity, chunk, *nodes
+        add_entity_to_chunk entity, chunk, *nodes
       end
       @entities_to_add.clear
 

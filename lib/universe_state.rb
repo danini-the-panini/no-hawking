@@ -238,11 +238,11 @@ class UniverseState < IngameState
 
     chunk_name = [xi,yi]
 
-    # @engine
-    # .add_entity_to_chunk({
-    #   :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
-    #   :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
-    # }, chunk_name, :drawable)
+    @engine
+    .add_entity_to_chunk({
+      :position => {:x => x1+chunk_size/2, :y => y1+chunk_size/2},
+      :sprite => make_sprite(Gosu::Image.new @window, "dbg_chunk.png"),
+    }, chunk_name, :drawable)
     # .add_entity_to_chunk({
     #   :position => {:x => Gosu::random(xi,xj), :y => Gosu::random(yi,yj)},
     #   :sprite => make_sprite(Gosu::Image.from_text @window, "Random:#{Gosu::random(0,1000)}", Gosu::default_font_name, 50),
@@ -260,7 +260,7 @@ class UniverseState < IngameState
       end
     end
 
-    moon_sqrt = 2
+    moon_sqrt = 4
     step = chunk_size/moon_sqrt
 
     (x1...x2).step(step) do |sx|
@@ -278,22 +278,22 @@ class UniverseState < IngameState
       end
     end
 
-    5.times do
-      ex = Gosu::random(x1,x2)
-      ey = Gosu::random(y1, y2)
-      @engine.add_entity({
-        :position => {:x => ex, :y => ey},
-        :enemy => {:alert_radius => 300, :attack_radius => 100,
-          :target => {:x => ex, :y => ey}},
-        :sprite => make_sprite(@spr_alien),
-        :colour => 0xFFFF0000,
-        :rotation => {:theta => Gosu::random(0,360)},
-        :collidable => {:radius => 12},
-        :health => 0.5,
-        :weapon => {:fire_rate => @enemy_fire_rate, :last_fire => 0,
-          :damage => @enemy_damage, :speed => @enemy_bullet_speed}
-      }.merge(motion_components), :enemy, :collidable, :acceleration, :velocity, :drawable)
-    end
+    # 5.times do
+    #   ex = Gosu::random(x1,x2)
+    #   ey = Gosu::random(y1, y2)
+    #   @engine.add_entity({
+    #     :position => {:x => ex, :y => ey},
+    #     :enemy => {:alert_radius => 300, :attack_radius => 100,
+    #       :target => {:x => ex, :y => ey}},
+    #     :sprite => make_sprite(@spr_alien),
+    #     :colour => 0xFFFF0000,
+    #     :rotation => {:theta => Gosu::random(0,360)},
+    #     :collidable => {:radius => 12},
+    #     :health => 0.5,
+    #     :weapon => {:fire_rate => @enemy_fire_rate, :last_fire => 0,
+    #       :damage => @enemy_damage, :speed => @enemy_bullet_speed}
+    #   }.merge(motion_components), :enemy, :collidable, :acceleration, :velocity, :drawable)
+    # end
   end
 
   def gen_hawking_pickup x, y

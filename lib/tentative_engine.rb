@@ -96,7 +96,7 @@ module Tentative
 
         from_chunk[:nodes].select do |node, list|
           list.delete id
-        end.each do |node|
+        end.each do |node,list|
           (to_chunk[:nodes][node] ||= {})[id] = entity
         end
       end

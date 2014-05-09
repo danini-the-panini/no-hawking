@@ -1,6 +1,22 @@
 require 'gosu'
+require_relative 'cam_follow'
+require_relative 'collision'
+require_relative 'control'
+require_relative 'cursor'
+require_relative 'drawable'
+require_relative 'emitter'
+require_relative 'entity'
+require_relative 'follow_mouse'
+require_relative 'friction'
+require_relative 'life'
+require_relative 'physics'
+require_relative 'position'
+require_relative 'utility'
+
+module Modulus
 
 class Engine
+  include Utility
 
   def initialize window
     @window = window
@@ -19,6 +35,7 @@ class Engine
     @cam_buffer = 20
 
     @visited_chunks = {}
+    @chunk_size = 1000
 
     @proc_gen = Proc.new {}
   end
@@ -29,12 +46,22 @@ class Engine
     @time += dt
     @last_time = new_time
 
-    @entites.each_with_index do |e, i|
+    @entities.each_with_index do |e, i|
       @me = e
       @my_index = i
 
       e.update dt, @time
     end
+
+    @entities_to_add.each do |e|
+      @entities << e
+    end
+    @entities_to_add.clear
+
+    @entities_to_remove.each do |e|
+      @entities.delete e
+    end
+    @entities_to_remove.clear
   end
 
   def draw
@@ -68,6 +95,12 @@ class Engine
     @camera
   end
 
+  def each_entity
+    @entities.each do |e|
+      yield e
+    end
+  end
+
   def each_entity_after_me
     @entities[@my_index..-1].each do |e|
       yield e
@@ -75,6 +108,10 @@ class Engine
   end
 
   def remove_me
+    remove_entity @me
+  end
+
+  def remove_entity e
     @entities_to_remove << @me
   end
 
@@ -131,5 +168,7 @@ class Engine
   def on_proc_gen &block
     @proc_gen = block
   end
+
+end
 
 end

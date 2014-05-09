@@ -1,11 +1,11 @@
-require_relative 'tentative_engine'
+require_relative 'modulus/engine'
 require_relative 'window_state'
 
 class EngineState < WindowState
   def initialize window
     super
     
-    @engine = Tentative::Engine.new
+    @engine = Modulus::Engine.new window
   end
 
   def button_up id

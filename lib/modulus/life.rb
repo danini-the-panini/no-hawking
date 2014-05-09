@@ -1,5 +1,17 @@
 module Life
 
+  def init_life life
+    @lifetime = @life = life
+  end
+
+  def lifetime
+    @lifetime
+  end
+
+  def life
+    @life
+  end
+
   def do_life dt, t
     @life -= dt
     if @life > 0

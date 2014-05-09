@@ -1,5 +1,7 @@
+require_relative 'utility'
 
 class Entity
+  include Utility
 
   def initialize engine
     @engine = engine

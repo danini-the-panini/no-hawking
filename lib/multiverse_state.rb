@@ -1,6 +1,7 @@
 require_relative 'ingame_state'
 require_relative 'universe_state'
 require_relative 'entities/swaggins'
+require_relative 'entities/white_hole'
 
 class MultiverseState < IngameState
   def initialize window
@@ -38,8 +39,8 @@ class MultiverseState < IngameState
 
       3.times do
         @engine
-        .add_entity_to_chunk(gen_white_hole(Gosu::random(x1,x2),
-          Gosu::random(y1,y2)),chunk_name,:white_hole, :drawable, :emitter)
+        .add_entity(WhiteHole.new(Gosu::random(x1,x2),
+          Gosu::random(y1,y2),@white_hole_img, @particle, @engine))
       end
     end
 

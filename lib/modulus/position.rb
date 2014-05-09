@@ -18,4 +18,7 @@ module Position
     @rotation
   end
 
+  def do_position dt, t
+  end
+
 end

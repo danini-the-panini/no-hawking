@@ -54,6 +54,8 @@ class Engine
       e.update dt, @time
     end
 
+    proc_gen
+
     @entities_to_add.each do |e|
       @entities << e
     end
@@ -149,32 +151,34 @@ class Engine
   end
 
   def proc_gen
-    x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
-    x2,y2 = screen2world(@window.width+@cam_buffer,@window.height+@cam_buffer)
+    if @proc_gen
+      x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
+      x2,y2 = screen2world(@window.width+@cam_buffer,@window.height+@cam_buffer)
 
-    x1 = x1.to_i / @chunk_size
-    y1 = y1.to_i / @chunk_size
-    x2 = x2.to_i / @chunk_size
-    y2 = y2.to_i / @chunk_size
+      x1 = x1.to_i / @chunk_size
+      y1 = y1.to_i / @chunk_size
+      x2 = x2.to_i / @chunk_size
+      y2 = y2.to_i / @chunk_size
 
-    @visited_chunks.each do |k,v|
-      v[:active] = false
-    end
+      @visited_chunks.each do |k,v|
+        v[:active] = false
+      end
 
-    (x1..x2).each do |xi|
-      (y1..y2).each do |yi|
-        unless @visited_chunks[[xi,yi]]
-          # @engine.add_chunk([xi,yi])
-          @proc_gen.call(xi, yi, @chunk_size)
-          @visited_chunks[[xi,yi]] = {:active => true}
-        else
-          @visited_chunks[[xi,yi]][:active] = true
+      (x1..x2).each do |xi|
+        (y1..y2).each do |yi|
+          unless @visited_chunks[[xi,yi]]
+            # @engine.add_chunk([xi,yi])
+            @proc_gen.call(xi, yi, @chunk_size)
+            @visited_chunks[[xi,yi]] = {:active => true}
+          else
+            @visited_chunks[[xi,yi]][:active] = true
+          end
         end
       end
-    end
 
-    @visited_chunks.each do |k,v|
-      @engine.activate_chunk k, v[:active]
+      # @visited_chunks.each do |k,v|
+      #   @engine.activate_chunk k, v[:active]
+      # end
     end
   end
 

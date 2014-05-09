@@ -31,7 +31,8 @@ class Engine
 
     @input_state = {}
 
-    @camera = {:x => 0.0, :y => 0.0}
+    @cam_x = 0.0
+    @cam_y = 0.0
     @cam_buffer = 20
 
     @visited_chunks = {}
@@ -91,8 +92,20 @@ class Engine
     @last_time = Gosu::milliseconds
   end
 
-  def camera
-    @camera
+  def cam_x
+    @cam_x
+  end
+
+  def cam_y
+    @cam_y
+  end
+
+  def cam_x= x
+    @cam_x = x
+  end
+
+  def cam_y= y
+    @cam_y = y
   end
 
   def each_entity
@@ -120,11 +133,11 @@ class Engine
   end
 
   def screen2world x, y
-    [x-@window.width/2+@camera[:x], y-@window.height/2+@camera[:y]]
+    [x-@window.width/2+@cam_x, y-@window.height/2+@cam_y]
   end
 
   def world2screen x, y
-    [x+@window.width/2-@camera[:x], y+@window.height/2-@camera[:y]]
+    [x+@window.width/2-@cam_x, y+@window.height/2-@cam_y]
   end
 
   def mouse_in_world_coords

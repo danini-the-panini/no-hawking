@@ -19,6 +19,7 @@ module Player
 
   def do_player dt, t
     do_follow_mouse dt, t
+    do_cam_follow dt, t
     do_control dt, t
     do_friction dt, t
     do_physics dt, t

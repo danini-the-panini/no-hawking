@@ -1,4 +1,5 @@
 require_relative 'engine_state'
+require_relative 'entities/my_cursor'
 
 class IngameState < EngineState
   def initialize window
@@ -8,11 +9,14 @@ class IngameState < EngineState
     @sleep_radius = 1000
 
     @particle = Gosu::Image.new @window, "effects/spr_particle.png"
+    @cursor = Gosu::Image.new @window, "ui/cursor.png"
 
     @spr_bar_bg = Gosu::Image.new @window, "ui/spr_bar_bg.png"
     @spr_bar_hawking = Gosu::Image.new @window, "ui/spr_bar_hawking.png"
 
     @spr_probe = Gosu::Image.new @window, "actors/spr_probe.png"
+
+    @engine.add_entity MyCursor.new(@cursor, @engine)
   end
 
   def enter_state

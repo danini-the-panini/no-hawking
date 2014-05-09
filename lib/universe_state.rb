@@ -86,7 +86,9 @@ class UniverseState < IngameState
     .add_system(:update, :weapon, :player) do |e, dt, t|
       if @engine.down?(Gosu::MsLeft) && (t-e[:weapon][:last_fire] > 1.0/e[:weapon][:fire_rate])
         e[:weapon][:last_fire] = t
-        mx, my = screen2world(@window.mouse_x, @window.mouse_y)
+        mx = screen2world_x @window.mouse_x
+        my = screen2world_y @window.mouse_y
+
         rad = Math::atan2(my-e[:position][:y], mx-e[:position][:x])
         theta = (rad*180.0)/Math::PI
         @engine.add_entity(motion_components.merge({

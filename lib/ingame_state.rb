@@ -115,7 +115,9 @@ class IngameState < EngineState
       end
     end
     .add_system(:update, :follow_mouse, :follow_mouse) do |e, dt, t|
-      mx, my = screen2world(@window.mouse_x, @window.mouse_y)
+      mx = screen2world_x @window.mouse_x
+      my = screen2world_y @window.mouse_y
+
       rad = Math::atan2(my-e[:position][:y], mx-e[:position][:x])
       e[:rotation][:theta] = (rad*180.0)/Math::PI
     end
@@ -124,8 +126,10 @@ class IngameState < EngineState
       e[:position][:y] = @window.mouse_y
     end
     .add_system(:update, :proc_gen, :player) do |e, dt, t|
-      x1,y1 = screen2world(-@cam_buffer,-@cam_buffer)
-      x2,y2 = screen2world(@window.width+@cam_buffer,@window.height+@cam_buffer)
+      x1 = screen2world_x -@cam_buffer
+      y1 = screen2world_y -@cam_buffer
+      x2 = screen2world_x @window.width+@cam_buffer
+      y2 = screen2world_y @window.height+@cam_buffer
 
       x1 = x1.to_i / @chunk_size
       y1 = y1.to_i / @chunk_size
@@ -169,7 +173,7 @@ class IngameState < EngineState
   end
 
   def draw_entity e
-    @window::translate(*world2screen(0,0)) do
+    @window::translate(world2screen_x(0), world2screen_y(0)) do
       draw_entity_nocam e, 0
     end
   end
@@ -193,12 +197,20 @@ class IngameState < EngineState
     img.draw_rot x, y, z, theta, dx, dy, sx, sy, colour, mode
   end
 
-  def screen2world x, y
-    [x-@window.width/2+@camera[:x], y-@window.height/2+@camera[:y]]
+  def screen2world_x x
+    x-@window.width/2+@camera[:x]
   end
 
-  def world2screen x, y
-    [x+@window.width/2-@camera[:x], y+@window.height/2-@camera[:y]]
+  def screen2world_y y
+    y-@window.height/2+@camera[:y]
+  end
+
+  def world2screen_x x
+    x+@window.width/2-@camera[:x]
+  end
+
+  def world2screen_y y
+    y+@window.height/2-@camera[:y]
   end
 
   def sq(x)

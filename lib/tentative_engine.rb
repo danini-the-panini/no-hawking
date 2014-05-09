@@ -94,7 +94,7 @@ module Tentative
         entity[:chunk] = chunk_name
         id = entity[:id]
 
-        from_chunk[:nodes].select do |node, list|
+        from_chunk[:nodes].lazy.select do |node, list|
           list.delete id
         end.each do |node,list|
           (to_chunk[:nodes][node] ||= {})[id] = entity

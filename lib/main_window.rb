@@ -7,6 +7,8 @@ class MainWindow < Gosu::Window
 
     @states = {}
     @current_state = nil
+
+    self.caption = "No Hawking"
   end
 
   def change_state new_state

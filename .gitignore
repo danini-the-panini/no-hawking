@@ -1,3 +1,4 @@
 *.gem
 /pkg
 /wrappers
+.ruby-version

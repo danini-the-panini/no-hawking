@@ -1,10 +1,18 @@
+require_relative 'garbage.rb'
+
 module Garbage
   class Entity
     def initialize
+      @id = Garbage.make_id
       @components = {}
     end
 
+    def id
+      @id
+    end
+
     def add_component name, component
+      @engine.component_added self, name if @engine
       component.added_to self, @engine
       @components[name] = component
       self.class.send(:define_method, name) do
@@ -13,13 +21,14 @@ module Garbage
     end
 
     def remove_component name
+      @engine.component_removed self, name if @engine
       @components.delete name
       remove_method name
     end
 
     %w(update).each do |meth|
       define_method meth do
-        each_component do |comp|
+        each_component_value do |comp|
            comp.send meth
         end
       end
@@ -27,15 +36,14 @@ module Garbage
 
     %w(button_down button_up).each do |meth|
       define_method meth do |id|
-        each_component do |comp|
-          puts "calling #{meth}"
+        each_component_value do |comp|
           comp.send meth, id
         end
       end
     end
 
     def has_component comp
-      @component.has_key? comp
+      @components.has_key? comp
     end
 
     def destroy!
@@ -52,17 +60,24 @@ module Garbage
 
     def added_to engine
       @engine = engine
-      each_component do |comp|
+      each_component_value do |comp|
         comp.added_to self, engine
+      end
+    end
+
+    def each_component
+      @components.keys.each do |comp|
+        yield comp
       end
     end
 
     private
 
-      def each_component
+      def each_component_value
         @components.values.each do |comp|
           yield comp
         end
       end
+
   end
 end

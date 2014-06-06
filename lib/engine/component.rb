@@ -1,5 +1,9 @@
+require 'matrix'
+
 module Garbage
   class Component
+    VEC2_ZERO = Vector[0.0,0.0]
+
     %w(update).each do |meth|
       define_method(meth) { }
     end

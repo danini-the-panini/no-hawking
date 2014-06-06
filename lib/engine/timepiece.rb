@@ -13,7 +13,7 @@ module Garbage
     def tick
       new_time = Gosu::milliseconds
       @delta = (new_time-@last_time).to_f*MILLISECOND
-      @time += dt
+      @time += @delta
       @last_time = new_time
     end
 

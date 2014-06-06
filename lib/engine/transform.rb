@@ -1,25 +1,12 @@
 module Garbage
   class Transform
-    def initialize x = 0.0, y = 0.0, rotation = 0.0
-      @x = x
-      @y = y
+    def initialize position = Vector[0,0], rotation = 0.0
+      @position = position
       @rotation = rotation
     end
 
-    def x
-      @x
-    end
-
-    def x= new_x
-      @x = new_x
-    end
-
-    def y
-      @y
-    end
-
-    def y= new_y
-      @y = new_y
+    def position
+      @position
     end
 
     def rotation
@@ -31,20 +18,18 @@ module Garbage
     end
 
     def translate x, y
-      @x += x
-      @y += y
+      @position += Vector[x,y]
     end
 
-    def translate_to x, y
-      @x = x
-      @y = y
+    def position= new_position
+      @position = new_position
     end
 
     def rotate theta
       @rotation += theta
     end
 
-    def rotate_to theta
+    def rotation= theta
       @rotation = theta
     end
   end

@@ -7,7 +7,7 @@ module Garbage
     end
 
     def draw transform
-      @sprite.draw transform.x, transform.y, 0
+      @sprite.draw transform.position.x, transform.position.y, 0
     end
   end
 end

@@ -17,7 +17,7 @@ module Garbage
       y-@engine.window.height/2+@entity.transform.position.y
     end
 
-    def screen2word v
+    def screen2world v
       Vector[screen2world_x(v.x), screen2world_y(v.y)]
     end
 

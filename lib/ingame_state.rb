@@ -126,8 +126,8 @@ class IngameState < EngineState
       e[:position][:y] = @window.mouse_y
     end
     .add_system(:update, :proc_gen, :player) do |e, dt, t|
-      x1 = screen2world_x -@cam_buffer
-      y1 = screen2world_y -@cam_buffer
+      x1 = screen2world_x(-@cam_buffer)
+      y1 = screen2world_y(-@cam_buffer)
       x2 = screen2world_x @window.width+@cam_buffer
       y2 = screen2world_y @window.height+@cam_buffer
 

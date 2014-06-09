@@ -15,8 +15,10 @@ module Garbage
       @engine.component_added self, name if @engine
       component.added_to self, @engine
       @components[name] = component
-      self.class.send(:define_method, name) do
-        component
+      (class << self; self; end).class_eval do
+        define_method name do
+          component
+        end
       end
     end
 

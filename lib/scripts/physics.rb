@@ -14,6 +14,10 @@ class Physics < Garbage::Component
     @velocity
   end
 
+  def velocity= v
+    @velocity = v
+  end
+
   def acceleration
     @acceleration
   end

@@ -2,6 +2,7 @@ require_relative 'garbage.rb'
 require_relative '../scripts/control'
 require_relative '../scripts/physics'
 require_relative '../scripts/rigid_body'
+require_relative '../scripts/follow'
 
 class Test < Gosu::Window
   def initialize width=800, height=600, fullscreen=false
@@ -14,6 +15,8 @@ class Test < Gosu::Window
     player.add_component :rigid_body, RigidBody.new(10.0)
     player.add_component :physics, Physics.new(1.0, 0.8)
     @engine.add_entity :player, player
+
+    @engine.main_camera.add_component :follow, Follow.new(player)
   end
 
   %w(button_down button_up).each do |meth|

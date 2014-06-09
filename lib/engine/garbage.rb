@@ -7,6 +7,7 @@ require_relative 'transform'
 require_relative 'renderable'
 require_relative 'renderer'
 require_relative 'timepiece'
+require_relative 'camera'
 
 module Garbage
 
@@ -16,6 +17,9 @@ module Garbage
     $last_id += 1
   end
 
+  # TODO: Put this thing in its own class
+  # in fact, I think it needs to be replaced by something
+  # like a linked-hash? I dunno...
   class EntityHash
     def initialize
       @values = Hash.new { |h,k| h[k] = [] }
@@ -46,6 +50,8 @@ module Garbage
       @drawable_entities = []
       @inputs = []
       @timepiece = Timepiece.new
+      @camera = make_camera
+      add_entity :main_camera, @camera
     end
 
     def window
@@ -96,9 +102,13 @@ module Garbage
     end
 
     def draw
-      @drawable_entities.delete_if do |e|
-        e.draw
-        e.destroyed?
+      @window.translate(
+          @camera.camera.world2screen_x(0),
+          @camera.camera.world2screen_y(0)) do
+        @drawable_entities.delete_if do |e|
+          e.draw
+          e.destroyed?
+        end
       end
     end
 
@@ -135,6 +145,14 @@ module Garbage
       end
     end
 
+    def main_camera
+      @camera
+    end
+
+    def main_camera= camera
+      @camera = camera
+    end
+
     private
 
       def each_entity
@@ -143,6 +161,12 @@ module Garbage
             yield e
           end
         end
+      end
+
+      def make_camera
+        camera = Transformable.new
+        camera.add_component :camera, Camera.new # TODO: add stuff?
+        camera
       end
 
   end

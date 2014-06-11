@@ -9,6 +9,7 @@ require_relative '../scripts/emitter'
 require_relative '../scripts/wtf/swear_word'
 require_relative '../scripts/wtf/letter'
 require_relative '../scripts/wtf/letter_gun'
+require_relative '../scripts/repel'
 
 class Test < Gosu::Window
 
@@ -19,8 +20,8 @@ class Test < Gosu::Window
     super width, height, fullscreen
     @engine = Garbage::Engine.new self
 
-    player = make_player
-    @engine.add_entity :player, player
+    @player = make_player
+    @engine.add_entity :player, @player
 
     cursor = Garbage::Renderable.new(
       Gosu::Image.from_text self, '+', Gosu::default_font_name, 20)
@@ -73,7 +74,7 @@ That amusing old man with a beard.', Vector[20.0,20.0]
       position = Vector[x,i*LINE_HEIGHT]
       line.split.each do |word|
         bad = Gosu::random(0.0,1.0) < 0.1
-        word = 'fuck' if bad
+        word = '****' if bad
         word_entity = make_word word.chomp, position, bad
         position += Vector[word_entity.renderer.sprite.width+SPACE_WIDTH,0.0]
       end
@@ -86,9 +87,10 @@ That amusing old man with a beard.', Vector[20.0,20.0]
     word_entity = Garbage::Renderable.new(
       word_sprite, Vector[0.0,1.0],
       bad ? Gosu::Color::RED : Gosu::Color::WHITE)
-    word_entity.add_component :physics, Physics.new
-    word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
+    word_entity.add_component :physics, Physics.new(1.0, 0.2)
+    #word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
     word_entity.add_component :swear_word, SwearWord.new(word) if bad
+    word_entity.add_component :repel, Repel.new(@player,500.0,50.0)
     word_entity.transform.position = position
     @engine.add_entity :word, word_entity
     word_entity

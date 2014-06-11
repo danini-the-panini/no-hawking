@@ -19,5 +19,18 @@ module Garbage
       @entity = entity
       @engine = engine
     end
+
+    # HELPERS
+    def len_sq x, y
+      x*x + y*y
+    end
+
+    def dot x1, y1, x2, y2
+      x1*x2 + y1*y2
+    end
+
+    def sq x
+      x*x
+    end
   end
 end

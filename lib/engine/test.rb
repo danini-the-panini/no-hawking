@@ -15,7 +15,8 @@ class Test < Gosu::Window
     player = make_player
     @engine.add_entity :player, player
 
-    cursor = Garbage::Renderable.new(Gosu::Image.from_text self, '+', Gosu::default_font_name, 20)
+    cursor = Garbage::Renderable.new(
+      Gosu::Image.from_text self, '+', Gosu::default_font_name, 20)
     cursor.add_component :cursor, Cursor.new
     @engine.add_entity :cursor, cursor
 
@@ -46,7 +47,7 @@ class Test < Gosu::Window
     emitter = Garbage::Renderable.new(
       Gosu::Image.from_text self, 'O', Gosu::default_font_name, 50)
     emitter.add_component :emitter, Emitter.new(20.0, 3, 0.5,
-      Gosu::Image.from_text(self, '*', Gosu::default_font_name, 10))
+      Gosu::Image.from_text(self, '*', Gosu::default_font_name, 20))
     emitter.transform.translate(50, 50)
     emitter
   end

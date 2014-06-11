@@ -53,7 +53,7 @@ That amusing old man with a beard.', Vector[20.0,20.0]
     player.add_component :face_mouse, FaceMouse.new()
     player.add_component :rigid_body, RigidBody.new(5.0)
     player.add_component :physics, Physics.new(1.0, 0.8)
-    player.add_component :gun, LetterGun.new(5.0, 0.1, 300.0)
+    player.add_component :letter_gun, LetterGun.new(5.0, 0.1, 300.0)
     @engine.main_camera.add_component :follow, Follow.new(player)
     player
   end

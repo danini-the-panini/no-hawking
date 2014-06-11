@@ -40,7 +40,7 @@ class LetterGun < Garbage::Component
       letter.transform.position = @entity.transform.position
       letter.transform.rotation = @entity.transform.rotation
       physics = Physics.new
-      physics.velocity = @entity.physics.velocity.normalized * @speed
+      physics.velocity = Vector::from_angle(@entity.transform.rotation) * @speed
       letter.add_component :physics, physics
       @engine.add_entity :letter, letter
     end

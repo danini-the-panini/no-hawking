@@ -16,4 +16,7 @@ class Vector
   def normalized
     Vector[x/len,y/len]
   end
+  def self.from_angle angle
+    Vector[Math::cos(angle),Math::sin(angle)]
+  end
 end

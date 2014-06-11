@@ -1,5 +1,5 @@
 require_relative 'garbage.rb'
-require_relative '../scripts/control'
+require_relative '../scripts/wtf/asteroid_control'
 require_relative '../scripts/physics'
 require_relative '../scripts/rigid_body'
 require_relative '../scripts/follow'
@@ -49,8 +49,8 @@ That amusing old man with a beard.', Vector[20.0,20.0]
   def make_player
     player = Garbage::Renderable.new(
       Gosu::Image.from_text self, '>', Gosu::default_font_name, 20)
-    player.add_component :control, Control.new(200)
-    player.add_component :face_mouse, FaceMouse.new()
+    player.add_component :asteroid_control, AsteroidControl.new(200,2)
+    #player.add_component :face_mouse, FaceMouse.new()
     player.add_component :rigid_body, RigidBody.new(5.0)
     player.add_component :physics, Physics.new(1.0, 0.8)
     player.add_component :letter_gun, LetterGun.new(5.0, 0.1, 300.0)

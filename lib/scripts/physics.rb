@@ -8,6 +8,8 @@ class Physics < Garbage::Component
     @acceleration = VEC2_ZERO
     @driving_force = VEC2_ZERO
     @friction_force = VEC2_ZERO
+    @angular_v = 0.0
+    @angular_acc = 0.0
   end
 
   def velocity
@@ -30,6 +32,18 @@ class Physics < Garbage::Component
     @driving_force = f
   end
 
+  def angular_acc= v
+    @angular_acc = v
+  end
+
+  def angular_acc
+    @angular_acc
+  end
+
+  def angular_v
+    @angular_v
+  end
+
   def mass
     @mass
   end
@@ -44,5 +58,9 @@ class Physics < Garbage::Component
     @acceleration = forces/@mass
     @velocity += @acceleration * @engine.delta
     @entity.transform.position += @velocity * @engine.delta
+
+    @angular_damp = -@friction * @angular_v
+    @angular_v += (@angular_acc + @angular_damp) * @engine.delta
+    @entity.transform.rotation += @angular_v * @engine.delta
   end
 end

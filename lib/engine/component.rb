@@ -4,6 +4,9 @@ module Garbage
   class Component
     VEC2_ZERO = Vector[0.0,0.0]
 
+    def on_hit other
+    end
+
     %w(update).each do |meth|
       define_method(meth) { }
     end

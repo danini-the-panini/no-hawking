@@ -141,7 +141,7 @@ module Garbage
 
     def each_with_component component
       each_entity do |e|
-        yield e if e.has_component(component)
+        yield e if e.has_component?(component)
       end
     end
 

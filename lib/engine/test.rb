@@ -6,6 +6,7 @@ require_relative '../scripts/follow'
 require_relative '../scripts/face_mouse'
 require_relative '../scripts/cursor'
 require_relative '../scripts/emitter'
+require_relative '../scripts/wtf/swear_word'
 
 class Test < Gosu::Window
 
@@ -30,7 +31,7 @@ class Test < Gosu::Window
 A funny old man with a beard
 He had a big beard
 A great big old beard
-That amusing old man with a beard.'
+That amusing old man with a beard.', Vector[20.0,20.0]
 
   end
 
@@ -48,7 +49,7 @@ That amusing old man with a beard.'
       Gosu::Image.from_text self, '>', Gosu::default_font_name, 20)
     player.add_component :control, Control.new(200)
     player.add_component :face_mouse, FaceMouse.new()
-    player.add_component :rigid_body, RigidBody.new(10.0)
+    player.add_component :rigid_body, RigidBody.new(5.0)
     player.add_component :physics, Physics.new(1.0, 0.8)
     @engine.main_camera.add_component :follow, Follow.new(player)
     player
@@ -63,10 +64,10 @@ That amusing old man with a beard.'
     emitter
   end
 
-  def make_paragraph text
-    position = Vector[0.0,0.0]
+  def make_paragraph text, position = Vector[0.0,0.0]
+    x = position.x
     text.split("\n").each_with_index do |line, i|
-      position = Vector[0.0,i*LINE_HEIGHT]
+      position = Vector[x,i*LINE_HEIGHT]
       p line
       line.split.each do |word|
         bad = Gosu::random(0.0,1.0) < 0.1
@@ -78,9 +79,14 @@ That amusing old man with a beard.'
   end
 
   def make_word word, position, bad
+    word_sprite =
+      Gosu::Image.from_text(self, word, Gosu::default_font_name, 30)
     word_entity = Garbage::Renderable.new(
-      Gosu::Image.from_text(self, word, Gosu::default_font_name, 30),
-      Vector[0.0,1.0], bad ? Gosu::Color::RED : Gosu::Color::WHITE)
+      word_sprite, Vector[0.0,1.0],
+      bad ? Gosu::Color::RED : Gosu::Color::WHITE)
+    word_entity.add_component :physics, Physics.new
+    word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
+    word_entity.add_component :swear_word, SwearWord.new(word) if bad
     word_entity.transform.position = position
     @engine.add_entity :word, word_entity
     word_entity

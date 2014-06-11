@@ -28,6 +28,12 @@ module Garbage
       remove_method name
     end
 
+    def on_hit other
+      each_component_value do |comp|
+        comp.on_hit other
+      end
+    end
+
     %w(update).each do |meth|
       define_method meth do
         each_component_value do |comp|
@@ -44,7 +50,7 @@ module Garbage
       end
     end
 
-    def has_component comp
+    def has_component? comp
       @components.has_key? comp
     end
 

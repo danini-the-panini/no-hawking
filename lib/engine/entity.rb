@@ -11,6 +11,10 @@ module Garbage
       @id
     end
 
+    def tag
+      @tag
+    end
+
     def add_component name, component
       @engine.component_added self, name if @engine
       component.added_to self, @engine
@@ -66,8 +70,9 @@ module Garbage
       @destroyed
     end
 
-    def added_to engine
+    def added_to engine, tag = nil
       @engine = engine
+      @tag = tag
       each_component_value do |comp|
         comp.added_to self, engine
       end

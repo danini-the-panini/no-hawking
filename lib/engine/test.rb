@@ -8,6 +8,10 @@ require_relative '../scripts/cursor'
 require_relative '../scripts/emitter'
 
 class Test < Gosu::Window
+
+  LINE_HEIGHT = 20
+  SPACE_WIDTH = 10
+
   def initialize width=800, height=600, fullscreen=false
     super width, height, fullscreen
     @engine = Garbage::Engine.new self
@@ -20,7 +24,14 @@ class Test < Gosu::Window
     cursor.add_component :cursor, Cursor.new
     @engine.add_entity :cursor, cursor
 
-    @engine.add_entity :emitter, make_emitter
+    #@engine.add_entity :emitter, make_emitter
+
+    make_paragraph 'There was an old man with a beard,
+A funny old man with a beard
+He had a big beard
+A great big old beard
+That amusing old man with a beard.'
+
   end
 
   %w(button_down button_up).each do |meth|
@@ -50,6 +61,28 @@ class Test < Gosu::Window
       Gosu::Image.from_text(self, '*', Gosu::default_font_name, 20))
     emitter.transform.translate(50, 50)
     emitter
+  end
+
+  def make_paragraph text
+    position = Vector[0.0,0.0]
+    text.split("\n").each_with_index do |line, i|
+      position = Vector[0.0,i*LINE_HEIGHT]
+      p line
+      line.split.each do |word|
+        word = 'fuck' if Gosu::random(0.0,1.0) < 0.1
+        word_entity = make_word word.chomp, position
+        position += Vector[word_entity.renderer.sprite.width+SPACE_WIDTH,0.0]
+      end
+    end
+  end
+
+  def make_word word, position
+    word_entity = Garbage::Renderable.new(
+      Gosu::Image.from_text(self, word, Gosu::default_font_name, 30),
+      Vector[0.0,1.0])
+    word_entity.transform.position = position
+    @engine.add_entity :word, word_entity
+    word_entity
   end
 end
 

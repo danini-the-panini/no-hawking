@@ -3,9 +3,9 @@ require_relative 'renderer'
 
 module Garbage
   class Renderable < Transformable
-    def initialize sprite
+    def initialize sprite, anchor = Vector[0.5,0.5]
       super()
-      @renderer = Renderer.new sprite
+      @renderer = Renderer.new sprite, anchor
     end
 
     def renderer

@@ -69,17 +69,18 @@ That amusing old man with a beard.'
       position = Vector[0.0,i*LINE_HEIGHT]
       p line
       line.split.each do |word|
-        word = 'fuck' if Gosu::random(0.0,1.0) < 0.1
-        word_entity = make_word word.chomp, position
+        bad = Gosu::random(0.0,1.0) < 0.1
+        word = 'fuck' if bad
+        word_entity = make_word word.chomp, position, bad
         position += Vector[word_entity.renderer.sprite.width+SPACE_WIDTH,0.0]
       end
     end
   end
 
-  def make_word word, position
+  def make_word word, position, bad
     word_entity = Garbage::Renderable.new(
       Gosu::Image.from_text(self, word, Gosu::default_font_name, 30),
-      Vector[0.0,1.0])
+      Vector[0.0,1.0], bad ? Gosu::Color::RED : Gosu::Color::WHITE)
     word_entity.transform.position = position
     @engine.add_entity :word, word_entity
     word_entity

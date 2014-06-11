@@ -7,6 +7,8 @@ require_relative '../scripts/face_mouse'
 require_relative '../scripts/cursor'
 require_relative '../scripts/emitter'
 require_relative '../scripts/wtf/swear_word'
+require_relative '../scripts/wtf/letter'
+require_relative '../scripts/wtf/letter_gun'
 
 class Test < Gosu::Window
 
@@ -51,6 +53,7 @@ That amusing old man with a beard.', Vector[20.0,20.0]
     player.add_component :face_mouse, FaceMouse.new()
     player.add_component :rigid_body, RigidBody.new(5.0)
     player.add_component :physics, Physics.new(1.0, 0.8)
+    player.add_component :gun, LetterGun.new(5.0, 0.1, 300.0)
     @engine.main_camera.add_component :follow, Follow.new(player)
     player
   end

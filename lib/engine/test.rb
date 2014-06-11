@@ -71,7 +71,6 @@ That amusing old man with a beard.', Vector[20.0,20.0]
     x = position.x
     text.split("\n").each_with_index do |line, i|
       position = Vector[x,i*LINE_HEIGHT]
-      p line
       line.split.each do |word|
         bad = Gosu::random(0.0,1.0) < 0.1
         word = 'fuck' if bad

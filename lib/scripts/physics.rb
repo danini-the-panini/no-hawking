@@ -5,9 +5,9 @@ class Physics < Garbage::Component
     @mass = mass
     @friction = friction
     @angular_friction = angular_friction
-    @velocity = VEC2_ZERO
-    @acceleration = VEC2_ZERO
-    @driving_force = VEC2_ZERO
+    @velocity = Garbage::VEC2_ZERO
+    @acceleration = Garbage::VEC2_ZERO
+    @driving_force = Garbage::VEC2_ZERO
     @angular_v = 0.0
     @angular_acc = 0.0
   end

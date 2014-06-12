@@ -74,7 +74,7 @@ That amusing old man with a beard.', Vector[100.0,100.0]
       position = Vector[x,i*LINE_HEIGHT]
       line.split.each do |word|
         bad = Gosu::random(0.0,1.0) < 0.1
-        word = '****' if bad
+        word = 'fuck' if bad # TODO: use a variety of swear words
         word_entity = make_word word.chomp, position, bad
         position += Vector[word_entity.renderer.sprite.width+SPACE_WIDTH,0.0]
       end
@@ -85,13 +85,14 @@ That amusing old man with a beard.', Vector[100.0,100.0]
     word_sprite =
       Gosu::Image.from_text(self, word, Gosu::default_font_name, 30)
     word_entity = Garbage::Renderable.new(
-      word_sprite, Vector[0.0,1.0],
+      word_sprite, Garbage::ANCHOR_CENTER,
       bad ? Gosu::Color::RED : Gosu::Color::WHITE)
     word_entity.add_component :physics, Physics.new(1.0, 0.9)
     #word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
     word_entity.add_component :swear_word, SwearWord.new(word) if bad
     word_entity.add_component :repel, Repel.new(@player,500.0,50.0)
-    word_entity.transform.position = position
+    word_entity.transform.position = position +
+      Vector[word_sprite.width/2, -word_sprite.height/2]
     @engine.add_entity :word, word_entity
     word_entity
   end

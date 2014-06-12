@@ -8,7 +8,7 @@ class Control < Garbage::Component
   end
 
   def update
-    @entity.physics.driving_force = VEC2_ZERO
+    @entity.physics.driving_force = Garbage::VEC2_ZERO
     if @engine.button_down? Gosu::KbLeft
       @entity.physics.driving_force -= @thrust_x
     end

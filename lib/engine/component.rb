@@ -2,7 +2,6 @@ require 'matrix'
 
 module Garbage
   class Component
-    VEC2_ZERO = Vector[0.0,0.0]
 
     def on_hit other
     end

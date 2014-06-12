@@ -10,7 +10,7 @@ class AsteroidControl < Garbage::Component
 
   def update
     @entity.physics.angular_acc = 0.0
-    @entity.physics.driving_force = VEC2_ZERO
+    @entity.physics.driving_force = Garbage::VEC2_ZERO
     if @engine.button_down? Gosu::KbLeft
       @entity.physics.angular_acc -= @torque
     end

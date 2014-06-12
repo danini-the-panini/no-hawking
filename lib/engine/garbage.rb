@@ -10,6 +10,16 @@ require_relative 'timepiece'
 require_relative 'camera'
 
 module Garbage
+  VEC2_ZERO = Vector[0.0,0.0]
+  ANCHOR_CENTER = Vector[0.5,0.5]
+  ANCHOR_TOP_LEFT = Vector[0.0,0.0]
+  ANCHOR_TOP = Vector[0.5,0.0]
+  ANCHOR_TOP_RIGHT = Vector[1.0,0.0]
+  ANCHOR_RIGHT = Vector[1.0,0.5]
+  ANCHOR_BOTTOM_RIGHT = Vector[1.0,1.0]
+  ANCHOR_BOTTOM = Vector[0.5,1.0]
+  ANCHOR_BOTTOM_LEFT = Vector[0.0,1.0]
+  ANCHOR_LEFT = Vector[0.0,0.5]
 
   $last_id = 0
 

@@ -17,7 +17,7 @@ class Repel < Garbage::Component
       ratio = 1.0-len/@range
       @entity.physics.driving_force =  (d/len)*-@factor*ratio
     else
-      @entity.physics.driving_force = VEC2_ZERO
+      @entity.physics.driving_force = Garbage::VEC2_ZERO
     end
   end
 end

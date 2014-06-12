@@ -34,7 +34,7 @@ class Test < Gosu::Window
 A funny old man with a beard
 He had a big beard
 A great big old beard
-That amusing old man with a beard.', Vector[20.0,20.0]
+That amusing old man with a beard.', Vector[100.0,100.0]
 
   end
 
@@ -50,10 +50,10 @@ That amusing old man with a beard.', Vector[20.0,20.0]
   def make_player
     player = Garbage::Renderable.new(
       Gosu::Image.from_text self, '>', Gosu::default_font_name, 20)
-    player.add_component :asteroid_control, AsteroidControl.new(200,2)
+    player.add_component :asteroid_control, AsteroidControl.new(200,20)
     #player.add_component :face_mouse, FaceMouse.new()
     player.add_component :rigid_body, RigidBody.new(5.0)
-    player.add_component :physics, Physics.new(1.0, 0.8)
+    player.add_component :physics, Physics.new(1.0, 0.8, 5.0)
     player.add_component :letter_gun, LetterGun.new(5.0, 0.1, 300.0)
     @engine.main_camera.add_component :follow, Follow.new(player)
     player
@@ -87,7 +87,7 @@ That amusing old man with a beard.', Vector[20.0,20.0]
     word_entity = Garbage::Renderable.new(
       word_sprite, Vector[0.0,1.0],
       bad ? Gosu::Color::RED : Gosu::Color::WHITE)
-    word_entity.add_component :physics, Physics.new(1.0, 0.2)
+    word_entity.add_component :physics, Physics.new(1.0, 0.9)
     #word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
     word_entity.add_component :swear_word, SwearWord.new(word) if bad
     word_entity.add_component :repel, Repel.new(@player,500.0,50.0)

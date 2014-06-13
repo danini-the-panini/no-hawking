@@ -45,6 +45,7 @@ class LetterGun < Garbage::Component
       letter.add_component :rigid_body,
         RigidBody.new(letter.renderer.sprite.width/2.0, @entity, [:player])
       letter.add_component :letter, Letter.new(l)
+      letter.add_component :life, Life.new(1)
       @engine.add_entity :letter, letter
     end
 end

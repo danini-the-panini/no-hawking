@@ -13,29 +13,44 @@ class RigidBody < Garbage::Component
 
   def update
     @engine.each_with_component :rigid_body do |other|
-      if other.id > @entity.id || @source == other || @ignore_list.include?(other.tag)
+      if other.id > @entity.id || @source == other ||
+          @ignore_list.include?(other.tag)
         mindist = @radius+other.rigid_body.radius
-        dx = other.transform.position.x - @entity.transform.position.x
-        dy = other.transform.position.y - @entity.transform.position.y
-        lsq = len_sq(dx,dy)
+        d = other.transform.position - @entity.transform.position
+        md = @entity.transform.position - other.transform.position
+        lsq = d.len_sq
         if lsq <= sq(mindist)
           # TODO: This doesn't behave 100%
+          # TODO: add more physics geometries
           len = Math::sqrt(lsq)
-          offset = (mindist - len)/2
-          ndx = dx/len
-          ndy = dy/len
-          @entity.transform.translate(-ndx*offset, -ndy*offset)
-          other.transform.translate(ndx*offset, ndy*offset)
+          mtd = md * (mindist-len)/len
+          n = mtd.zero? ? Garbage::VEC2_ZERO : mtd.normalize
 
-          dot_dn = dot(2*@entity.physics.velocity.x,
-                       2*@entity.physics.velocity.y,
-                       ndx,ndy)
-          @entity.physics.velocity -= Vector[dot_dn*ndx,dot_dn*ndy]
+          im1 = 1.0 / @entity.physics.mass
+          im2 = 1.0 / other.physics.mass
 
-          dot_dn2 = dot(2*other.physics.velocity.x,
-                        2*other.physics.velocity.y,
-                        -ndx,-ndy)
-          other.physics.velocity -= Vector[dot_dn2*-ndx,dot_dn2*-ndy]
+          # push-pull them apart based off their mass
+          @entity.transform.position += mtd * (im1 / (im1 + im2))
+          other.transform.position -= mtd * (im2 / (im1 + im2))
+
+          collision_point =
+            ((@entity.transform.position * other.rigid_body.radius) +
+               (other.transform.position * @radius)) /
+            (@radius + other.rigid_body.radius)
+
+          v = (@entity.physics.velocity - (other.physics.velocity))
+          vn = v.dot n
+
+          # sphere intersecting but moving away from each other already
+          next if vn > 0.0
+
+          # collision impulse
+          i = (-(1.0 + 0.5) * vn) / (im2 + im2)
+          impulse = n * i
+
+          # change in momentum
+          @entity.physics.velocity = @entity.physics.velocity + impulse * im1
+          other.physics.velocity = other.physics.velocity - impulse * im2
 
           other.on_hit(@entity)
           on_hit(other)

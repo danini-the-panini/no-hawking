@@ -13,10 +13,13 @@ class Vector
   def len
     Math::sqrt(len_sq)
   end
-  def normalized
-    Vector[x/len,y/len]
+  def dot other
+    x*other.x + y*other.y
   end
   def self.from_angle angle
     Vector[Math::cos(angle),Math::sin(angle)]
+  end
+  def zero?
+    x.zero? && y.zero?
   end
 end

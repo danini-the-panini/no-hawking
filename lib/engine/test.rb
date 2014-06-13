@@ -88,7 +88,7 @@ That amusing old man with a beard.', Vector[100.0,100.0]
       word_sprite, Garbage::ANCHOR_CENTER,
       bad ? Gosu::Color::RED : Gosu::Color::WHITE)
     word_entity.add_component :physics, Physics.new(1.0, 0.9)
-    #word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
+    word_entity.add_component :rigid_body, RigidBody.new(word_sprite.height/2)
     word_entity.add_component :swear_word, SwearWord.new(word) if bad
     word_entity.add_component :repel, Repel.new(@player,500.0,50.0)
     word_entity.transform.position = position +

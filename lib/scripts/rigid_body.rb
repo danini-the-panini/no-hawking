@@ -1,20 +1,20 @@
 require_relative '../engine/component'
 
 class RigidBody < Garbage::Component
+  attr_accessor :radius, :source, :ignore_list
+
   def initialize radius, source = nil, ignore_list = []
     @radius = radius
     @source = source
     @ignore_list = ignore_list
   end
 
-  def radius
-    @radius
-  end
-
   def update
     @engine.each_with_component :rigid_body do |other|
-      if other.id > @entity.id || @source == other ||
-          @ignore_list.include?(other.tag)
+      if other.id > @entity.id && @source != other &&
+          other.rigid_body.source != @entity &&
+          !@ignore_list.include?(other.tag) &&
+          !other.rigid_body.ignore_list.include?(@entity.tag)
         mindist = @radius+other.rigid_body.radius
         d = other.transform.position - @entity.transform.position
         md = @entity.transform.position - other.transform.position
@@ -52,8 +52,8 @@ class RigidBody < Garbage::Component
           @entity.physics.velocity = @entity.physics.velocity + impulse * im1
           other.physics.velocity = other.physics.velocity - impulse * im2
 
-          other.on_hit(@entity)
-          on_hit(other)
+          other.on_hit @entity, collision_point
+          on_hit other, collision_point
         end
       end
     end

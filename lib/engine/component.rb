@@ -3,7 +3,7 @@ require 'matrix'
 module Garbage
   class Component
 
-    def on_hit other
+    def on_hit other, point
     end
 
     %w(update).each do |meth|

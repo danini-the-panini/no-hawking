@@ -6,7 +6,7 @@ class SwearWord < Garbage::Component
     @buff = 0
   end
 
-  def on_hit other
+  def on_hit other, point
     if other.has_component? :letter
       if @word[@buff] == other.letter.value
         @buff += 1

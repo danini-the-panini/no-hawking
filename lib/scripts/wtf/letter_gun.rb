@@ -42,6 +42,8 @@ class LetterGun < Garbage::Component
       physics = Physics.new
       physics.velocity = Vector::from_angle(@entity.transform.rotation) * @speed
       letter.add_component :physics, physics
+      letter.add_component :rigid_body,
+        RigidBody.new(letter.renderer.sprite.width/2.0, @entity, [:player])
       @engine.add_entity :letter, letter
     end
 end

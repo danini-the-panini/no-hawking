@@ -32,9 +32,9 @@ module Garbage
       remove_method name
     end
 
-    def on_hit other
+    def on_hit other, point
       each_component_value do |comp|
-        comp.on_hit other
+        comp.on_hit other, point
       end
     end
 

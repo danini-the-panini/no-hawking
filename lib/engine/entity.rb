@@ -2,17 +2,11 @@ require_relative 'garbage.rb'
 
 module Garbage
   class Entity
+    attr_reader :id, :tag, :components
+
     def initialize
       @id = Garbage.make_id
       @components = {}
-    end
-
-    def id
-      @id
-    end
-
-    def tag
-      @tag
     end
 
     def add_component name, component

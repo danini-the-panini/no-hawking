@@ -53,7 +53,7 @@ class RigidBody < Garbage::Component
           other.physics.velocity = other.physics.velocity - impulse * im2
 
           other.on_hit @entity, collision_point
-          on_hit other, collision_point
+          @entity.on_hit other, collision_point
         end
       end
     end

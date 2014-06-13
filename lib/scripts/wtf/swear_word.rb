@@ -8,13 +8,14 @@ class SwearWord < Garbage::Component
 
   def on_hit other, point
     if other.has_component? :letter
-      if @word[@buff] == other.letter.value
-        @buff += 1
-        if @buff >= @word.length
-          self.destroy!
-          # TODO: make explosion
-        end
-      end
+      @entity.destroy!
+#      if @word[@buff] == other.letter.value
+        #@buff += 1
+        #if @buff >= @word.length
+          #@entity.destroy!
+          #TODO: make explosion
+        #end
+      #end
     end
   end
 end

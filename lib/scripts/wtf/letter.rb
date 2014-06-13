@@ -1,6 +1,8 @@
 require_relative '../../engine/component'
 
 class Letter < Garbage::Component
+  attr_accessor :letter
+
   def initialize letter
     @letter = letter
   end

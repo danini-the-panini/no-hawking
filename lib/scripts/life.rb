@@ -1,6 +1,8 @@
 require_relative '../engine/component'
 
 class Life < Garbage::Component
+  attr_accessor :life
+
   def initialize life
     @life = life.to_f
     @lifetime = life.to_f

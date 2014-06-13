@@ -3,6 +3,8 @@ require_relative '../../engine/component'
 require_relative '../../engine/matrix_hacks'
 
 class AsteroidControl < Garbage::Component
+  attr_accessor :thrust, :torque
+
   def initialize thrust, torque
     @thrust = thrust
     @torque = torque

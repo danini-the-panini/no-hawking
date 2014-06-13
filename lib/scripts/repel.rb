@@ -2,6 +2,8 @@ require_relative '../engine/component'
 require_relative '../engine/matrix_hacks'
 
 class Repel < Garbage::Component
+  attr_accessor :repellant, :factor, :range
+
   def initialize repellant, factor = 1.0, range = Float::INFINITY
     @repellant = repellant
     @factor = factor

@@ -6,6 +6,7 @@ require_relative '../physics'
 require_relative '../../engine/matrix_hacks'
 
 class LetterGun < Garbage::Component
+  attr_accessor :fire_rate, :damage, :speed
 
   A_TO_Z = ('A'..'Z').to_a
   ALPHABET = A_TO_Z.map do |c|
@@ -17,7 +18,6 @@ class LetterGun < Garbage::Component
     @last_fire = 0
     @damage = damage
     @speed = speed
-
   end
 
   def update

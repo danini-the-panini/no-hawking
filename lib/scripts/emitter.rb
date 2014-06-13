@@ -3,6 +3,8 @@ require_relative 'physics'
 require_relative 'life'
 
 class Emitter < Garbage::Component
+  attr_accessor :velocity, :lifetime, :period, :sprite
+
   def initialize velocity, lifetime, period, sprite
     @velocity = velocity
     @sprite = sprite

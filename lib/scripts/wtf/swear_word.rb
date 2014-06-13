@@ -1,6 +1,8 @@
 require_relative '../../engine/component'
 
 class SwearWord < Garbage::Component
+  attr_accessor :word
+
   def initialize word
     @word = word
     @buff = 0

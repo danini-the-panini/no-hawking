@@ -1,6 +1,8 @@
 require_relative '../engine/component'
 
 class Follow < Garbage::Component
+  attr_accessor :to_follow, :factor, :smoothing
+
   def initialize to_follow, factor = 1.0, smoothing = 0.1
     @to_follow = to_follow
     @factor = factor

@@ -8,4 +8,10 @@ class Letter < Garbage::Component
   def value
     @letter
   end
+
+  def on_hit other, point
+    # TODO: make explosion
+    @entity.destroy!
+  end
+
 end
